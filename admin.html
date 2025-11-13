@@ -128,6 +128,10 @@
         .dark .text-orange-800 { color: #fdba74; }
         .dark .text-orange-600 { color: #fb923c; }
 
+        .dark .bg-purple-50 { background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.3); }
+        .dark .text-purple-800 { color: #d8b4fe; }
+        .dark .text-purple-600 { color: #c084fc; }
+
         .dark #admin-bottom-nav { 
             background: rgba(15, 23, 42, 0.95); 
             backdrop-filter: blur(10px);
@@ -158,6 +162,10 @@
         .stat-card:hover {
             transform: translateY(-5px) scale(1.02);
         }
+
+        .badge-pending { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+        .badge-approved { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .badge-rejected { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
     </style>
 </head>
 <body class="font-sans">
@@ -177,6 +185,7 @@
             <div id="adminTournamentPage" class="page"></div>
             <div id="adminManageTournamentPage" class="page"></div>
             <div id="adminUsersPage" class="page"></div>
+            <div id="adminPaymentsPage" class="page"></div>
             <div id="adminSettingsPage" class="page"></div>
         </main>
 
@@ -189,6 +198,13 @@
                 <a href="#" class="admin-nav-item text-center text-gray-400 transition-all" onclick="navigateTo('adminTournamentPage')">
                     <i class="fas fa-plus-circle fa-lg"></i>
                     <span class="block text-xs mt-1">Tournaments</span>
+                </a>
+                <a href="#" class="admin-nav-item text-center text-gray-400 transition-all" onclick="navigateTo('adminPaymentsPage')">
+                    <div class="relative inline-block">
+                        <i class="fas fa-money-bill-wave fa-lg"></i>
+                        <span id="payment-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold" style="display: none;"></span>
+                    </div>
+                    <span class="block text-xs mt-1">Payments</span>
                 </a>
                 <a href="#" class="admin-nav-item text-center text-gray-400 transition-all" onclick="navigateTo('adminUsersPage')">
                     <i class="fas fa-users fa-lg"></i>
@@ -250,6 +266,21 @@
         let currentAdminData = null;
         let currentTournamentId = null;
 
+        // Check for pending payments badge
+        function updatePaymentBadge() {
+            db.ref('payment_requests').orderByChild('status').equalTo('pending').once('value', snap => {
+                const badge = document.getElementById('payment-badge');
+                if (!badge) return;
+                const count = snap.numChildren();
+                if (count > 0) {
+                    badge.textContent = count > 9 ? '9+' : count;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+        }
+
         function navigateTo(pageId, data = null) {
             document.getElementById('initial-loader').style.display = 'none';
             if (pageId === 'adminManageTournamentPage' && data) currentTournamentId = data.tournamentId;
@@ -269,6 +300,8 @@
                 item.classList.toggle('text-gray-400', !isActive);
             });
             window.scrollTo(0, 0);
+            
+            if (auth.currentUser) updatePaymentBadge();
         }
 
         function showToast(message, isError = false) {
@@ -285,8 +318,18 @@
 
         auth.onAuthStateChanged(async user => {
             if (user) {
-                currentAdminData = { uid: user.uid, email: user.email };
-                navigateTo('adminDashboardPage');
+                const userData = (await db.ref(`users/${user.uid}`).once('value')).val();
+                if (userData && userData.role === 'admin') {
+                    currentAdminData = { uid: user.uid, email: user.email, ...userData };
+                    navigateTo('adminDashboardPage');
+                    updatePaymentBadge();
+                    // Listen for payment requests changes
+                    db.ref('payment_requests').on('value', updatePaymentBadge);
+                } else {
+                    showToast('Access denied. Admin privileges required.', true);
+                    auth.signOut();
+                    navigateTo('adminLoginPage');
+                }
             } else {
                 currentAdminData = null;
                 navigateTo('adminLoginPage');
@@ -302,6 +345,7 @@
                 case 'adminTournamentPage': renderAdminTournamentPage(pageContainer); break;
                 case 'adminManageTournamentPage': renderAdminManageTournamentPage(pageContainer); break;
                 case 'adminUsersPage': renderAdminUsersPage(pageContainer); break;
+                case 'adminPaymentsPage': renderAdminPaymentsPage(pageContainer); break;
                 case 'adminSettingsPage': renderAdminSettingsPage(pageContainer); break;
             }
         }
@@ -329,7 +373,7 @@
 
                     <div class="mt-6 bg-gradient-to-r from-cyan-900/20 to-teal-900/20 border border-cyan-500/30 p-4 rounded-xl">
                         <p class="text-center text-sm text-gray-300 mb-2"><i class="fas fa-info-circle mr-2 text-cyan-400"></i>Default Admin Credentials:</p>
-                        <p class="text-center font-mono text-cyan-300">Email: admin@nxtournament.com</p>
+                        <p class="text-center font-mono text-cyan-300">Email: joy@nx.com</p>
                         <p class="text-center font-mono text-cyan-300">Password: admin123</p>
                     </div>
                 </div>`;
@@ -388,6 +432,16 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="bg-purple-50 border p-4 rounded-2xl shadow-lg stat-card cursor-pointer" onclick="navigateTo('adminPaymentsPage')">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-3xl font-bold text-purple-600" id="pending-payments">...</p>
+                                <p class="text-sm text-purple-800 mt-1">Pending Requests</p>
+                            </div>
+                            <i class="fas fa-clock text-4xl text-purple-300"></i>
+                        </div>
+                    </div>
                     
                     <button onclick="navigateTo('adminTournamentPage')" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-4 rounded-2xl font-bold text-lg shadow-2xl btn-animated">
                         <i class="fas fa-plus-circle mr-2"></i>Create New Tournament
@@ -409,6 +463,9 @@
             });
             document.getElementById('total-prize').textContent = formatCurrency(totalPrize);
             document.getElementById('total-revenue').textContent = formatCurrency(totalRevenue);
+            
+            const pendingPayments = (await db.ref('payment_requests').orderByChild('status').equalTo('pending').once('value')).numChildren();
+            document.getElementById('pending-payments').textContent = pendingPayments;
         }
 
         async function renderAdminTournamentPage(container) {
@@ -598,20 +655,163 @@
                 <div class="bg-blue-50 border p-4 rounded-xl shadow-lg card-hover">
                     <div class="flex justify-between items-start mb-3">
                         <div>
-                            <p class="font-bold text-blue-800 text-lg">${u.username}</p>
+                            <p class="font-bold text-blue-800 text-lg">${u.username} ${u.role === 'admin' ? '<span class="text-xs bg-yellow-500 text-white px-2 py-1 rounded-full ml-2"><i class="fas fa-crown mr-1"></i>Admin</span>' : ''}</p>
                             <p class="text-sm text-gray-600">${u.email}</p>
                         </div>
                         <span class="text-xl font-bold text-green-600">${formatCurrency(u.wallet_balance || 0)}</span>
                     </div>
-                    <div class="flex gap-2">
-                        <button onclick="addMoneyToUser('${uid}', '${u.username}')" class="flex-1 text-white bg-gradient-to-r from-green-500 to-teal-500 px-4 py-2 rounded-lg text-sm font-semibold btn-animated">
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <button onclick="addMoneyToUser('${uid}', '${u.username}')" class="text-white bg-gradient-to-r from-green-500 to-teal-500 px-4 py-2 rounded-lg text-sm font-semibold btn-animated">
                             <i class="fas fa-plus-circle mr-1"></i>Add Money
                         </button>
-                        <button onclick="deductMoneyFromUser('${uid}', '${u.username}')" class="flex-1 text-white bg-gradient-to-r from-orange-500 to-red-500 px-4 py-2 rounded-lg text-sm font-semibold btn-animated">
+                        <button onclick="deductMoneyFromUser('${uid}', '${u.username}')" class="text-white bg-gradient-to-r from-orange-500 to-red-500 px-4 py-2 rounded-lg text-sm font-semibold btn-animated">
                             <i class="fas fa-minus-circle mr-1"></i>Deduct
                         </button>
                     </div>
+                    ${u.role !== 'admin' ? `
+                    <button onclick="makeAdmin('${uid}', '${u.username}')" class="w-full text-white bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 rounded-lg text-sm font-semibold btn-animated">
+                        <i class="fas fa-crown mr-1"></i>Make Admin
+                    </button>` : `
+                    <button onclick="removeAdmin('${uid}', '${u.username}')" class="w-full text-white bg-gradient-to-r from-gray-600 to-gray-700 px-4 py-2 rounded-lg text-sm font-semibold btn-animated">
+                        <i class="fas fa-user mr-1"></i>Remove Admin
+                    </button>`}
                 </div>`).join('');
+        }
+
+        async function renderAdminPaymentsPage(container) {
+            container.innerHTML = `
+                <div class="p-4 min-h-screen">
+                    <h2 class="text-3xl font-bold mb-6 text-gradient">Payment Requests</h2>
+                    <div class="flex border-b border-teal-500/30 mb-4">
+                        <button id="pendingTab" class="flex-1 py-3 text-center font-semibold border-b-2 border-teal-500 text-teal-400 transition-all">Pending</button>
+                        <button id="historyTab" class="flex-1 py-3 text-center font-semibold border-b-2 border-transparent text-gray-400 transition-all">History</button>
+                    </div>
+                    <div id="pendingContent" class="space-y-3"></div>
+                    <div id="historyContent" class="space-y-3" style="display:none;"></div>
+                </div>`;
+            
+            attachPaymentTabListeners();
+            
+            const pendingSnapshot = await db.ref('payment_requests').orderByChild('status').equalTo('pending').once('value');
+            const pending = pendingSnapshot.val() || {};
+            
+            const pendingEl = document.getElementById('pendingContent');
+            if (Object.keys(pending).length === 0) {
+                pendingEl.innerHTML = `<p class="text-center py-8 text-gray-400">No pending requests.</p>`;
+            } else {
+                pendingEl.innerHTML = await Promise.all(Object.entries(pending).map(async ([id, req]) => {
+                    return `
+                        <div class="bg-white border p-4 rounded-xl shadow-lg card-hover">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <p class="font-bold text-lg">${req.username}</p>
+                                    <p class="text-sm text-gray-600">${req.type === 'deposit' ? '<i class="fas fa-arrow-down text-green-500 mr-1"></i>Deposit' : '<i class="fas fa-arrow-up text-orange-500 mr-1"></i>Withdrawal'}</p>
+                                </div>
+                                <span class="text-2xl font-bold text-teal-600">${formatCurrency(req.amount)}</span>
+                            </div>
+                            <div class="bg-gray-100 border border-gray-300 p-3 rounded-lg mb-3 text-sm">
+                                <p class="text-gray-700"><i class="fas fa-mobile-alt mr-2 text-blue-500"></i><strong>Method:</strong> ${req.payment_method.toUpperCase()}</p>
+                                <p class="text-gray-700"><i class="fas fa-phone mr-2 text-green-500"></i><strong>Phone:</strong> ${req.phone_number}</p>
+                                ${req.transaction_id ? `<p class="text-gray-700"><i class="fas fa-receipt mr-2 text-purple-500"></i><strong>Trx ID:</strong> ${req.transaction_id}</p>` : ''}
+                                <p class="text-xs text-gray-500 mt-2"><i class="far fa-clock mr-1"></i>${new Date(req.created_at).toLocaleString()}</p>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="approvePayment('${id}', '${req.type}', '${req.user_id}', ${req.amount})" class="text-white bg-gradient-to-r from-green-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">
+                                    <i class="fas fa-check mr-1"></i>Approve
+                                </button>
+                                <button onclick="rejectPayment('${id}')" class="text-white bg-gradient-to-r from-red-500 to-orange-500 p-3 rounded-lg font-semibold btn-animated">
+                                    <i class="fas fa-times mr-1"></i>Reject
+                                </button>
+                            </div>
+                        </div>`;
+                })).then(htmlArray => htmlArray.join(''));
+            }
+            
+            const allSnapshot = await db.ref('payment_requests').once('value');
+            const all = allSnapshot.val() || {};
+            const history = Object.entries(all).filter(([id, req]) => req.status !== 'pending');
+            
+            const historyEl = document.getElementById('historyContent');
+            if (history.length === 0) {
+                historyEl.innerHTML = `<p class="text-center py-8 text-gray-400">No history yet.</p>`;
+            } else {
+                historyEl.innerHTML = history.sort((a, b) => new Date(b[1].created_at) - new Date(a[1].created_at)).map(([id, req]) => `
+                    <div class="bg-white border p-4 rounded-xl shadow-lg">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-bold">${req.username}</p>
+                                <p class="text-sm text-gray-600">${req.type === 'deposit' ? 'Deposit' : 'Withdrawal'} - ${formatCurrency(req.amount)}</p>
+                                <p class="text-xs text-gray-500 mt-1">${new Date(req.created_at).toLocaleString()}</p>
+                            </div>
+                            <span class="badge-${req.status} px-3 py-1 rounded-full text-xs font-bold">${req.status.toUpperCase()}</span>
+                        </div>
+                    </div>`).join('');
+            }
+        }
+
+        function attachPaymentTabListeners() {
+            const pendingTab = document.getElementById('pendingTab');
+            const historyTab = document.getElementById('historyTab');
+            const pendingContent = document.getElementById('pendingContent');
+            const historyContent = document.getElementById('historyContent');
+            
+            pendingTab.addEventListener('click', () => {
+                pendingTab.className = "flex-1 py-3 text-center font-semibold border-b-2 border-teal-500 text-teal-400 transition-all";
+                historyTab.className = "flex-1 py-3 text-center font-semibold border-b-2 border-transparent text-gray-400 transition-all";
+                pendingContent.style.display = 'block';
+                historyContent.style.display = 'none';
+            });
+            
+            historyTab.addEventListener('click', () => {
+                historyTab.className = "flex-1 py-3 text-center font-semibold border-b-2 border-teal-500 text-teal-400 transition-all";
+                pendingTab.className = "flex-1 py-3 text-center font-semibold border-b-2 border-transparent text-gray-400 transition-all";
+                historyContent.style.display = 'block';
+                pendingContent.style.display = 'none';
+            });
+        }
+
+        async function approvePayment(requestId, type, userId, amount) {
+            if (!confirm(`Approve this ${type} request for ${formatCurrency(amount)}?`)) return;
+            
+            const user = (await db.ref(`users/${userId}`).once('value')).val();
+            let newBalance;
+            
+            if (type === 'deposit') {
+                newBalance = (user.wallet_balance || 0) + amount;
+            } else {
+                if ((user.wallet_balance || 0) < amount) {
+                    return showToast('User has insufficient balance!', true);
+                }
+                newBalance = (user.wallet_balance || 0) - amount;
+            }
+            
+            const updates = {
+                [`/payment_requests/${requestId}/status`]: 'approved',
+                [`/payment_requests/${requestId}/approved_at`]: new Date().toISOString(),
+                [`/users/${userId}/wallet_balance`]: newBalance,
+                [`/transactions/${userId}/${db.ref().child('transactions').push().key}`]: {
+                    amount: amount,
+                    type: type === 'deposit' ? 'credit' : 'debit',
+                    description: `${type === 'deposit' ? 'Deposit' : 'Withdrawal'} - Approved by admin`,
+                    created_at: new Date().toISOString()
+                }
+            };
+            
+            await db.ref().update(updates);
+            showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} approved successfully!`);
+            renderAdminPaymentsPage(document.getElementById('adminPaymentsPage'));
+        }
+
+        async function rejectPayment(requestId) {
+            if (!confirm('Reject this payment request?')) return;
+            
+            await db.ref(`payment_requests/${requestId}`).update({
+                status: 'rejected',
+                rejected_at: new Date().toISOString()
+            });
+            
+            showToast('Payment request rejected.');
+            renderAdminPaymentsPage(document.getElementById('adminPaymentsPage'));
         }
 
         function renderAdminSettingsPage(container) {
@@ -635,6 +835,17 @@
                         <button onclick="toggleTheme()" class="w-full text-white bg-gradient-to-r from-gray-700 to-gray-800 p-4 rounded-lg font-semibold flex items-center justify-center btn-animated">
                             <i class="fas ${themeIcon} mr-2"></i> ${themeButtonText}
                         </button>
+                    </div>
+                    
+                    <div class="bg-white border p-6 rounded-2xl shadow-lg">
+                        <h3 class="text-xl font-bold mb-4 flex items-center text-gradient">
+                            <i class="fas fa-cog mr-2"></i>Payment Settings
+                        </h3>
+                        <div class="bg-gradient-to-r from-cyan-900/30 to-teal-900/30 border border-cyan-500/30 p-4 rounded-lg mb-3">
+                            <p class="text-sm text-gray-300 mb-2"><i class="fas fa-mobile-alt mr-2 text-teal-400"></i>Payment Number</p>
+                            <p class="font-mono text-teal-300 font-bold text-lg">01712345678</p>
+                            <p class="text-xs text-gray-400 mt-2">Users will send money to this number</p>
+                        </div>
                     </div>
                     
                     <div class="bg-white border p-6 rounded-2xl shadow-lg">
@@ -776,6 +987,25 @@
             showToast(`${formatCurrency(amount)} deducted from ${username}'s wallet!`);
             renderAdminUsersPage(document.getElementById('adminUsersPage'));
         }
+
+        async function makeAdmin(userId, username) {
+            if (!confirm(`Make ${username} an admin? They will have full admin access.`)) return;
+            
+            await db.ref(`users/${userId}/role`).set('admin');
+            showToast(`${username} is now an admin!`);
+            renderAdminUsersPage(document.getElementById('adminUsersPage'));
+        }
+
+        async function removeAdmin(userId, username) {
+            if (userId === auth.currentUser.uid) {
+                return showToast("You can't remove your own admin privileges!", true);
+            }
+            if (!confirm(`Remove admin privileges from ${username}?`)) return;
+            
+            await db.ref(`users/${userId}/role`).set('user');
+            showToast(`Admin privileges removed from ${username}.`);
+            renderAdminUsersPage(document.getElementById('adminUsersPage'));
+        }
     </script>
 </body>
-      </html>
+</html>
