@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NX Tournament - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(20, 184, 166, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(20, 184, 166, 0.8); }
+        }
+        @keyframes slide-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        body { 
+            -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; overflow-x: hidden;
+        }
+        
+        .page { display: none; animation: slide-in 0.5s ease; } 
+        .page.active { display: block; }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+        }
+
+        .btn-animated {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .btn-animated:hover {
+            transform: scale(1.05);
+        }
+        .btn-animated::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .btn-animated:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .floating { animation: float 3s ease-in-out infinite; }
+        .glow { animation: pulse-glow 2s ease-in-out infinite; }
+
+        ::-webkit-scrollbar { width: 8px; } 
+        ::-webkit-scrollbar-track { background: #1e293b; } 
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #06b6d4, #14b8a6); border-radius: 10px; }
+        
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; margin: 0; 
+        }
+        input[type=number] { -moz-appearance: textfield; }
+
+        /* Dark Mode Styles */
+        .dark body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            background-size: 200% 200%;
+            animation: gradient-shift 15s ease infinite;
+            color: #e2e8f0;
+        }
+        .dark #admin-app-container {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .dark .bg-white { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(20, 184, 166, 0.2); }
+        .dark .text-gray-800 { color: #e2e8f0; }
+        .dark .text-gray-600 { color: #cbd5e1; }
+        .dark .text-gray-500 { color: #94a3b8; }
+        .dark .border { border-color: rgba(20, 184, 166, 0.2); }
+        .dark input, .dark select {
+            background: rgba(30, 41, 59, 0.8) !important;
+            border: 1px solid rgba(20, 184, 166, 0.3);
+            color: #e2e8f0;
+        }
+        .dark input::placeholder { color: #64748b; }
+        .dark input:focus, .dark select:focus {
+            border-color: #14b8a6;
+            box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+        }
+
+        .dark .bg-blue-50 { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); }
+        .dark .text-blue-800 { color: #93c5fd; }
+        .dark .text-blue-600 { color: #60a5fa; }
+        
+        .dark .bg-teal-50 { background: rgba(20, 184, 166, 0.1); border-color: rgba(20, 184, 166, 0.3); }
+        .dark .text-teal-800 { color: #5eead4; }
+        .dark .text-teal-600 { color: #2dd4bf; }
+        
+        .dark .bg-green-50 { background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.3); }
+        .dark .text-green-800 { color: #86efac; }
+        .dark .text-green-600 { color: #4ade80; }
+
+        .dark .bg-orange-50 { background: rgba(249, 115, 22, 0.1); border-color: rgba(249, 115, 22, 0.3); }
+        .dark .text-orange-800 { color: #fdba74; }
+        .dark .text-orange-600 { color: #fb923c; }
+
+        .dark #admin-bottom-nav { 
+            background: rgba(15, 23, 42, 0.95); 
+            backdrop-filter: blur(10px);
+            border-color: rgba(20, 184, 166, 0.2);
+        }
+
+        .text-gradient { 
+            background: linear-gradient(135deg, #06b6d4, #14b8a6, #10b981); 
+            background-size: 200% 200%; 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            animation: gradient-shift 5s ease infinite; 
+        }
+
+        .watermark {
+            position: fixed;
+            bottom: 70px;
+            right: 10px;
+            font-size: 10px;
+            opacity: 0.5;
+            color: #64748b;
+            z-index: 40;
+        }
+
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+    </style>
+</head>
+<body class="font-sans">
+
+    <div id="admin-app-container" class="max-w-md mx-auto min-h-screen shadow-2xl">
+
+        <div id="initial-loader" class="flex items-center justify-center h-screen">
+            <div class="text-center">
+                <i class="fas fa-spinner fa-spin fa-3x text-teal-500" style="animation: spin 1s linear infinite;"></i>
+                <p class="mt-4 text-gray-400 text-lg">Loading Admin Panel...</p>
+            </div>
+        </div>
+        
+        <main id="main-content" class="pb-20">
+            <div id="adminLoginPage" class="page"></div>
+            <div id="adminDashboardPage" class="page"></div>
+            <div id="adminTournamentPage" class="page"></div>
+            <div id="adminManageTournamentPage" class="page"></div>
+            <div id="adminUsersPage" class="page"></div>
+            <div id="adminSettingsPage" class="page"></div>
+        </main>
+
+        <nav id="admin-bottom-nav" class="fixed bottom-0 left-0 right-0 border-t max-w-md mx-auto" style="display: none;">
+            <div class="flex justify-around p-3">
+                <a href="#" class="admin-nav-item text-center text-gray-400 transition-all" onclick="navigateTo('adminDashboardPage')">
+                    <i class="fas fa-tachometer-alt fa-lg"></i>
+                    <span class="block text-xs mt-1">Dashboard</span>
+                </a>
+                <a href="#" class="admin-nav-item text-center text-gray-400 transition-all" onclick="navigateTo('adminTournamentPage')">
+                    <i class="fas fa-plus-circle fa-lg"></i>
+                    <span class="block text-xs mt-1">Tournaments</span>
+                </a>
+                <a href="#" class="admin-nav-item text-center text-gray-400 transition-all" onclick="navigateTo('adminUsersPage')">
+                    <i class="fas fa-users fa-lg"></i>
+                    <span class="block text-xs mt-1">Users</span>
+                </a>
+                <a href="#" class="admin-nav-item text-center text-gray-400 transition-all" onclick="navigateTo('adminSettingsPage')">
+                    <i class="fas fa-cogs fa-lg"></i>
+                    <span class="block text-xs mt-1">Settings</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="watermark">Dev by Joy</div>
+    </div>
+
+    <div id="toast" class="fixed top-5 right-5 text-white py-3 px-5 rounded-lg shadow-2xl" style="display: none; z-index: 1000;"></div>
+
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Theme Management
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+            if (document.getElementById('adminSettingsPage').classList.contains('active')) {
+                renderAdminSettingsPage(document.getElementById('adminSettingsPage'));
+            }
+        }
+
+        // Apply dark theme by default
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            applyTheme(savedTheme);
+        })();
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1_zl6X1ZYt8mN5uwJ-81qyb11uV-Kmi0",
+            authDomain: "tsample-e99ea.firebaseapp.com",
+            databaseURL: "https://tsample-e99ea-default-rtdb.firebaseio.com",
+            projectId: "tsample-e99ea",
+            storageBucket: "tsample-e99ea.firebasestorage.app",
+            messagingSenderId: "725687331089",
+            appId: "1:725687331089:web:030803ecc0df2ddbd904b0"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        let currentAdminData = null;
+        let currentTournamentId = null;
+
+        function navigateTo(pageId, data = null) {
+            document.getElementById('initial-loader').style.display = 'none';
+            if (pageId === 'adminManageTournamentPage' && data) currentTournamentId = data.tournamentId;
+            
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                loadPageContent(pageId);
+            }
+            const nav = document.getElementById('admin-bottom-nav');
+            if(nav) nav.style.display = auth.currentUser ? 'block' : 'none';
+            
+            document.querySelectorAll('.admin-nav-item').forEach(item => {
+                const isActive = item.getAttribute('onclick').includes(pageId);
+                item.classList.toggle('text-teal-400', isActive);
+                item.classList.toggle('text-gray-400', !isActive);
+            });
+            window.scrollTo(0, 0);
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `fixed top-5 right-5 text-white py-3 px-5 rounded-lg shadow-2xl ${isError ? 'bg-gradient-to-r from-red-500 to-orange-500' : 'bg-gradient-to-r from-green-500 to-teal-500'}`;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        function formatCurrency(amount) {
+            return `৳${Number(amount).toLocaleString('en-BD', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+        }
+
+        auth.onAuthStateChanged(async user => {
+            if (user) {
+                currentAdminData = { uid: user.uid, email: user.email };
+                navigateTo('adminDashboardPage');
+            } else {
+                currentAdminData = null;
+                navigateTo('adminLoginPage');
+            }
+        });
+        
+        function loadPageContent(pageId) {
+            const pageContainer = document.getElementById(pageId);
+            if (!pageContainer) return;
+            switch (pageId) {
+                case 'adminLoginPage': renderAdminLoginPage(pageContainer); break;
+                case 'adminDashboardPage': renderAdminDashboardPage(pageContainer); break;
+                case 'adminTournamentPage': renderAdminTournamentPage(pageContainer); break;
+                case 'adminManageTournamentPage': renderAdminManageTournamentPage(pageContainer); break;
+                case 'adminUsersPage': renderAdminUsersPage(pageContainer); break;
+                case 'adminSettingsPage': renderAdminSettingsPage(pageContainer); break;
+            }
+        }
+        
+        function renderAdminLoginPage(container) {
+            container.innerHTML = `
+                <div class="p-6 h-screen flex flex-col justify-center">
+                    <div class="text-center mb-8 floating">
+                        <div class="w-32 h-32 mx-auto rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 flex items-center justify-center text-6xl glow">
+                            <i class="fas fa-shield-alt text-white"></i>
+                        </div>
+                    </div>
+                    <h1 class="text-5xl font-bold text-center mb-2 text-gradient">NX Admin Panel</h1>
+                    <p class="text-center text-gray-400 mb-8">Tournament Management System</p>
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-2xl border">
+                        <form id="adminLoginForm" class="space-y-4">
+                            <input type="email" id="adminLoginEmail" placeholder="Admin Email" class="w-full p-3 rounded-lg" required>
+                            <input type="password" id="adminLoginPassword" placeholder="Password" class="w-full p-3 rounded-lg" required>
+                            <button type="submit" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Login
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="mt-6 bg-gradient-to-r from-cyan-900/20 to-teal-900/20 border border-cyan-500/30 p-4 rounded-xl">
+                        <p class="text-center text-sm text-gray-300 mb-2"><i class="fas fa-info-circle mr-2 text-cyan-400"></i>Default Admin Credentials:</p>
+                        <p class="text-center font-mono text-cyan-300">Email: admin@nxtournament.com</p>
+                        <p class="text-center font-mono text-cyan-300">Password: admin123</p>
+                    </div>
+                </div>`;
+
+            document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                auth.signInWithEmailAndPassword(e.target.adminLoginEmail.value, e.target.adminLoginPassword.value).catch(err => showToast(err.message, true));
+            });
+        }
+
+        async function renderAdminDashboardPage(container) {
+            container.innerHTML = `
+                <div class="p-4 space-y-6 min-h-screen">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-3xl font-bold text-gradient">Admin Dashboard</h2>
+                        <button onclick="logout()" class="text-sm text-white bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 rounded-full font-semibold btn-animated">
+                            <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-blue-50 border p-4 rounded-2xl shadow-lg stat-card glow">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-3xl font-bold text-blue-600" id="total-users">...</p>
+                                    <p class="text-sm text-blue-800 mt-1">Total Users</p>
+                                </div>
+                                <i class="fas fa-users text-4xl text-blue-300"></i>
+                            </div>
+                        </div>
+                        <div class="bg-teal-50 border p-4 rounded-2xl shadow-lg stat-card glow">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-3xl font-bold text-teal-600" id="total-tournaments">...</p>
+                                    <p class="text-sm text-teal-800 mt-1">Tournaments</p>
+                                </div>
+                                <i class="fas fa-trophy text-4xl text-teal-300"></i>
+                            </div>
+                        </div>
+                        <div class="bg-green-50 border p-4 rounded-2xl shadow-lg stat-card glow">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xl font-bold text-green-600" id="total-prize">...</p>
+                                    <p class="text-sm text-green-800 mt-1">Prize Won</p>
+                                </div>
+                                <i class="fas fa-gift text-4xl text-green-300"></i>
+                            </div>
+                        </div>
+                        <div class="bg-orange-50 border p-4 rounded-2xl shadow-lg stat-card glow">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xl font-bold text-orange-600" id="total-revenue">...</p>
+                                    <p class="text-sm text-orange-800 mt-1">Revenue</p>
+                                </div>
+                                <i class="fas fa-chart-line text-4xl text-orange-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="navigateTo('adminTournamentPage')" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-4 rounded-2xl font-bold text-lg shadow-2xl btn-animated">
+                        <i class="fas fa-plus-circle mr-2"></i>Create New Tournament
+                    </button>
+                </div>`;
+            
+            const users = (await db.ref('users').once('value')).numChildren();
+            const tournamentsSnapshot = await db.ref('tournaments').once('value');
+            document.getElementById('total-users').textContent = users;
+            document.getElementById('total-tournaments').textContent = tournamentsSnapshot.numChildren();
+            
+            const tournaments = tournamentsSnapshot.val() || {};
+            let totalPrize = 0, totalRevenue = 0;
+            Object.values(tournaments).forEach(t => {
+                if (t.status === 'Completed' && t.winner_id) {
+                    totalPrize += t.prize_pool;
+                    totalRevenue += (t.entry_fee * (t.commission_percentage / 100)) * (Object.keys(t.participants || {}).length);
+                }
+            });
+            document.getElementById('total-prize').textContent = formatCurrency(totalPrize);
+            document.getElementById('total-revenue').textContent = formatCurrency(totalRevenue);
+        }
+
+        async function renderAdminTournamentPage(container) {
+            container.innerHTML = `
+                <div class="p-4 space-y-6 min-h-screen">
+                    <div class="bg-white p-6 rounded-2xl shadow-2xl border">
+                        <h2 class="text-2xl font-bold mb-4 text-gradient flex items-center">
+                            <i class="fas fa-trophy mr-2"></i>Create Tournament
+                        </h2>
+                        <form id="createTournamentForm" class="space-y-4">
+                            <input type="text" id="t-title" placeholder="Tournament Title" class="w-full p-3 rounded-lg" required>
+                            <input type="text" id="t-game-name" placeholder="Game Name (e.g., FPS Arena)" class="w-full p-3 rounded-lg" required>
+                            <select id="t-game-type" class="w-full p-3 rounded-lg" required>
+                                <option value="">Select Game Type</option>
+                                <option value="fps_game">FPS Game</option>
+                                <option value="quiz">Quiz</option>
+                                <option value="rock_paper_scissors">Rock Paper Scissors</option>
+                            </select>
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="number" id="t-fee" placeholder="Entry Fee (৳)" class="w-full p-3 rounded-lg" required>
+                                <input type="number" id="t-prize" placeholder="Prize Pool (৳)" class="w-full p-3 rounded-lg" required>
+                            </div>
+                            <input type="datetime-local" id="t-time" class="w-full p-3 rounded-lg" required>
+                            <input type="number" id="t-commission" placeholder="Commission %" class="w-full p-3 rounded-lg" required>
+                            <button type="submit" class="w-full text-white bg-gradient-to-r from-green-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">
+                                <i class="fas fa-check-circle mr-2"></i>Create Tournament
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <h2 class="text-2xl font-bold mt-8 text-gradient">All Tournaments</h2>
+                    <div id="all-tournaments-list" class="space-y-3">
+                        <div class="text-center py-4">
+                            <i class="fas fa-spinner fa-spin fa-2x text-teal-500"></i>
+                        </div>
+                    </div>
+                </div>`;
+
+            document.getElementById('createTournamentForm').addEventListener('submit', createTournament);
+            const listEl = document.getElementById('all-tournaments-list');
+            const tournaments = (await db.ref('tournaments').once('value')).val();
+            if(!tournaments) { 
+                listEl.innerHTML = `<p class="text-center text-gray-400 py-4">No tournaments created yet.</p>`; 
+                return; 
+            }
+            
+            listEl.innerHTML = Object.entries(tournaments).map(([id, t]) => `
+                <div class="bg-teal-50 border p-4 rounded-xl shadow-lg flex items-center justify-between card-hover">
+                    <div>
+                        <p class="font-bold text-teal-800 text-lg">${t.title} 
+                            <span class="text-xs font-semibold ${
+                                t.status === 'Live' ? 'text-red-500' : 
+                                t.status === 'Completed' ? 'text-green-600' : 'text-yellow-600'
+                            }">(${t.status})</span>
+                        </p>
+                        <p class="text-sm text-gray-600"><i class="fas fa-gamepad mr-1"></i>${t.game_name}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="navigateTo('adminManageTournamentPage', {tournamentId: '${id}'})" class="bg-gradient-to-r from-cyan-500 to-teal-500 text-white px-4 py-2 rounded-lg text-sm font-semibold btn-animated">
+                            <i class="fas fa-cog mr-1"></i>Manage
+                        </button>
+                        <button onclick="deleteTournament('${id}')" class="bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-lg text-sm btn-animated">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+
+        async function renderAdminManageTournamentPage(container) {
+            if (!currentTournamentId) { 
+                container.innerHTML = `<p class="text-center p-8 text-red-400">Error: No tournament selected.</p>`; 
+                return; 
+            }
+            
+            container.innerHTML = `
+                <div class="p-4 space-y-6 min-h-screen" id="manage-tournament-content">
+                    <div class="text-center">
+                        <i class="fas fa-spinner fa-spin fa-3x text-teal-500"></i>
+                    </div>
+                </div>`;
+            
+            const contentEl = document.getElementById('manage-tournament-content');
+            const tSnapshot = await db.ref(`tournaments/${currentTournamentId}`).once('value');
+            const tournament = tSnapshot.val();
+            const participants = (await db.ref(`participants/${currentTournamentId}`).once('value')).val() || {};
+            
+            let participantOptions = '', participantListHtml = '';
+            for (const pId in participants) {
+                const user = (await db.ref(`users/${pId}`).once('value')).val();
+                if(user) {
+                    participantOptions += `<option value="${pId}">${user.username}</option>`;
+                    
+                    const pData = participants[pId];
+                    let gameResultText = pData.gameResult || 'Not Played';
+                    if (tournament.game_type === 'fps_game' && pData.score !== undefined) {
+                        gameResultText = `Score: ${pData.score}, Health: ${pData.health}`;
+                    }
+
+                    participantListHtml += `
+                        <li class="bg-gradient-to-r from-gray-700/30 to-gray-800/30 p-3 rounded-lg flex justify-between border border-gray-600">
+                            <span class="text-white">${user.username}</span>
+                            <span class="font-bold text-teal-400">${gameResultText}</span>
+                        </li>`;
+                }
+            }
+            
+            contentEl.innerHTML = `
+                <div class="flex items-center gap-4 mb-4">
+                    <button onclick="navigateTo('adminTournamentPage')" class="text-gray-400 hover:text-teal-400 transition-all">
+                        <i class="fas fa-arrow-left fa-2x"></i>
+                    </button>
+                    <h2 class="text-2xl font-bold text-gradient">${tournament.title}</h2>
+                </div>
+                
+                <div class="bg-white border p-6 rounded-2xl shadow-2xl space-y-4">
+                    <h3 class="font-bold text-xl flex items-center text-gradient">
+                        <i class="fas fa-door-open mr-2"></i>Room Details & Status
+                    </h3>
+                    <form id="roomDetailsForm" class="space-y-3">
+                        <input type="text" id="t-roomid" placeholder="Room ID" value="${tournament.room_id || ''}" class="w-full p-3 rounded-lg">
+                        <input type="text" id="t-roompass" placeholder="Room Password" value="${tournament.room_password || ''}" class="w-full p-3 rounded-lg">
+                        <select id="t-status" class="w-full p-3 rounded-lg">
+                            <option value="Upcoming" ${tournament.status === 'Upcoming' && 'selected'}>Upcoming</option>
+                            <option value="Live" ${tournament.status === 'Live' && 'selected'}>Live</option>
+                            <option value="Completed" ${tournament.status === 'Completed' && 'selected'}>Completed</option>
+                        </select>
+                        <button type="submit" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">
+                            <i class="fas fa-save mr-2"></i>Update Details
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="bg-white border p-6 rounded-2xl shadow-2xl space-y-4 ${tournament.status === 'Completed' ? 'hidden' : ''}">
+                    <h3 class="font-bold text-xl flex items-center text-gradient">
+                        <i class="fas fa-crown mr-2"></i>Declare Winner
+                    </h3>
+                    <form id="winnerForm" class="space-y-3">
+                        <select id="winner-select" class="w-full p-3 rounded-lg">
+                            <option value="">Select a winner...</option>
+                            ${participantOptions}
+                        </select>
+                        <button type="submit" class="w-full text-white bg-gradient-to-r from-green-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">
+                            <i class="fas fa-trophy mr-2"></i>Declare & Distribute Prize
+                        </button>
+                    </form>
+                </div>
+                
+                ${tournament.status === 'Completed' ? `
+                    <div class="bg-green-50 border border-green-300 text-green-800 p-4 rounded-xl text-center font-semibold">
+                        <i class="fas fa-check-circle mr-2"></i>This tournament is completed.
+                    </div>` : ''}
+                
+                <div class="bg-white border p-6 rounded-2xl shadow-2xl">
+                    <h3 class="font-bold text-xl mb-4 flex items-center text-gradient">
+                        <i class="fas fa-users mr-2"></i>Participants (${Object.keys(participants).length})
+                    </h3>
+                    <ul class="space-y-2 max-h-60 overflow-y-auto">
+                        ${participantListHtml || '<li class="text-gray-400 text-center py-4">No participants yet.</li>'}
+                    </ul>
+                </div>`;
+            
+            document.getElementById('roomDetailsForm').addEventListener('submit', updateRoomDetails);
+            document.getElementById('winnerForm')?.addEventListener('submit', declareWinner);
+        }
+
+        async function renderAdminUsersPage(container) {
+            container.innerHTML = `
+                <div class="p-4 min-h-screen">
+                    <h2 class="text-3xl font-bold mb-6 text-gradient">User Management</h2>
+                    <div id="users-list" class="space-y-3">
+                        <div class="text-center py-4">
+                            <i class="fas fa-spinner fa-spin fa-2x text-teal-500"></i>
+                        </div>
+                    </div>
+                </div>`;
+            
+            const usersSnapshot = await db.ref('users').once('value');
+            const users = usersSnapshot.val();
+            const listEl = document.getElementById('users-list');
+            
+            if (!users) {
+                listEl.innerHTML = `<p class="text-center text-gray-400 py-4">No users found.</p>`;
+                return;
+            }
+            
+            listEl.innerHTML = Object.entries(users).map(([uid, u]) => `
+                <div class="bg-blue-50 border p-4 rounded-xl shadow-lg card-hover">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <p class="font-bold text-blue-800 text-lg">${u.username}</p>
+                            <p class="text-sm text-gray-600">${u.email}</p>
+                        </div>
+                        <span class="text-xl font-bold text-green-600">${formatCurrency(u.wallet_balance || 0)}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="addMoneyToUser('${uid}', '${u.username}')" class="flex-1 text-white bg-gradient-to-r from-green-500 to-teal-500 px-4 py-2 rounded-lg text-sm font-semibold btn-animated">
+                            <i class="fas fa-plus-circle mr-1"></i>Add Money
+                        </button>
+                        <button onclick="deductMoneyFromUser('${uid}', '${u.username}')" class="flex-1 text-white bg-gradient-to-r from-orange-500 to-red-500 px-4 py-2 rounded-lg text-sm font-semibold btn-animated">
+                            <i class="fas fa-minus-circle mr-1"></i>Deduct
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function renderAdminSettingsPage(container) {
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+            const themeButtonText = currentTheme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode';
+            const themeIcon = currentTheme === 'light' ? 'fa-moon' : 'fa-sun';
+
+            container.innerHTML = `
+                <div class="p-4 space-y-6 min-h-screen">
+                    <h2 class="text-3xl font-bold mb-6 text-gradient">Admin Settings</h2>
+                    
+                    <div class="bg-teal-50 border p-6 rounded-2xl shadow-lg">
+                        <p class="text-gray-600 text-sm">Admin Email</p>
+                        <p class="text-2xl text-teal-800 font-bold">${currentAdminData?.email || 'N/A'}</p>
+                    </div>
+                    
+                    <div class="bg-white border p-6 rounded-2xl shadow-lg">
+                        <h3 class="text-xl font-bold mb-4 flex items-center text-gradient">
+                            <i class="fas fa-palette mr-2"></i>Appearance
+                        </h3>
+                        <button onclick="toggleTheme()" class="w-full text-white bg-gradient-to-r from-gray-700 to-gray-800 p-4 rounded-lg font-semibold flex items-center justify-center btn-animated">
+                            <i class="fas ${themeIcon} mr-2"></i> ${themeButtonText}
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white border p-6 rounded-2xl shadow-lg">
+                        <h3 class="text-xl font-bold mb-4 flex items-center text-gradient">
+                            <i class="fas fa-key mr-2"></i>Security
+                        </h3>
+                        <button onclick="changePassword()" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-4 rounded-lg font-semibold btn-animated">
+                            Send Password Reset Email
+                        </button>
+                    </div>
+                    
+                    <a href="index.html" class="block w-full text-center text-gray-800 bg-gray-200 hover:bg-gray-300 p-4 rounded-lg font-semibold transition-all">
+                        <i class="fas fa-external-link-alt mr-2"></i>Go to User Panel
+                    </a>
+                </div>`;
+        }
+
+        function logout() { auth.signOut(); }
+        
+        function changePassword() { 
+            auth.sendPasswordResetEmail(auth.currentUser.email)
+                .then(() => showToast(`Password reset link sent to ${auth.currentUser.email}`))
+                .catch(err => showToast(err.message, true)); 
+        }
+
+        async function createTournament(e) {
+            e.preventDefault();
+            const form = e.target;
+            const newTournament = {
+                title: form['t-title'].value, 
+                game_name: form['t-game-name'].value, 
+                game_type: form['t-game-type'].value,
+                entry_fee: Number(form['t-fee'].value), 
+                prize_pool: Number(form['t-prize'].value),
+                match_time: new Date(form['t-time'].value).toISOString(), 
+                commission_percentage: Number(form['t-commission'].value),
+                status: 'Upcoming', 
+                created_at: new Date().toISOString()
+            };
+            
+            await db.ref('tournaments').push(newTournament);
+            showToast('Tournament created successfully!');
+            renderAdminTournamentPage(document.getElementById('adminTournamentPage')); 
+        }
+
+        async function deleteTournament(tournamentId) {
+            if (confirm('Are you sure you want to delete this tournament?')) {
+                await db.ref().update({ 
+                    [`/tournaments/${tournamentId}`]: null, 
+                    [`/participants/${tournamentId}`]: null 
+                });
+                showToast('Tournament deleted.');
+                renderAdminTournamentPage(document.getElementById('adminTournamentPage'));
+            }
+        }
+        
+        async function updateRoomDetails(e) {
+            e.preventDefault();
+            await db.ref(`tournaments/${currentTournamentId}`).update({
+                room_id: document.getElementById('t-roomid').value,
+                room_password: document.getElementById('t-roompass').value,
+                status: document.getElementById('t-status').value
+            });
+            showToast('Tournament details updated!');
+            renderAdminManageTournamentPage(document.getElementById('adminManageTournamentPage'));
+        }
+
+        async function declareWinner(e) {
+            e.preventDefault();
+            const winnerId = document.getElementById('winner-select').value;
+            if (!winnerId) return showToast('Please select a winner!', true);
+            
+            const tournament = (await db.ref(`tournaments/${currentTournamentId}`).once('value')).val();
+            const winner = (await db.ref(`users/${winnerId}`).once('value')).val();
+            const newBalance = (winner.wallet_balance || 0) + tournament.prize_pool;
+            
+            const updates = {
+                [`/tournaments/${currentTournamentId}/status`]: 'Completed', 
+                [`/tournaments/${currentTournamentId}/winner_id`]: winnerId,
+                [`/participants/${currentTournamentId}/${winnerId}/status`]: 'Winner', 
+                [`/users/${winnerId}/wallet_balance`]: newBalance,
+                [`/transactions/${winnerId}/${db.ref().child('transactions').push().key}`]: {
+                    amount: tournament.prize_pool, 
+                    type: 'credit', 
+                    description: `Prize for winning: ${tournament.title}`, 
+                    created_at: new Date().toISOString()
+                }
+            };
+            
+            await db.ref().update(updates);
+            showToast('Winner declared and prize distributed!');
+            renderAdminManageTournamentPage(document.getElementById('adminManageTournamentPage'));
+        }
+
+        async function addMoneyToUser(userId, username) {
+            const amount = prompt(`Enter amount to add to ${username}'s wallet (৳):`);
+            if (!amount || isNaN(amount) || Number(amount) <= 0) return showToast('Invalid amount!', true);
+            
+            const user = (await db.ref(`users/${userId}`).once('value')).val();
+            const newBalance = (user.wallet_balance || 0) + Number(amount);
+            
+            const updates = {
+                [`/users/${userId}/wallet_balance`]: newBalance,
+                [`/transactions/${userId}/${db.ref().child('transactions').push().key}`]: {
+                    amount: Number(amount),
+                    type: 'credit',
+                    description: 'Money added by admin',
+                    created_at: new Date().toISOString()
+                }
+            };
+            
+            await db.ref().update(updates);
+            showToast(`${formatCurrency(amount)} added to ${username}'s wallet!`);
+            renderAdminUsersPage(document.getElementById('adminUsersPage'));
+        }
+
+        async function deductMoneyFromUser(userId, username) {
+            const amount = prompt(`Enter amount to deduct from ${username}'s wallet (৳):`);
+            if (!amount || isNaN(amount) || Number(amount) <= 0) return showToast('Invalid amount!', true);
+            
+            const user = (await db.ref(`users/${userId}`).once('value')).val();
+            if ((user.wallet_balance || 0) < Number(amount)) {
+                return showToast('User has insufficient balance!', true);
+            }
+            
+            const newBalance = (user.wallet_balance || 0) - Number(amount);
+            
+            const updates = {
+                [`/users/${userId}/wallet_balance`]: newBalance,
+                [`/transactions/${userId}/${db.ref().child('transactions').push().key}`]: {
+                    amount: Number(amount),
+                    type: 'debit',
+                    description: 'Money deducted by admin',
+                    created_at: new Date().toISOString()
+                }
+            };
+            
+            await db.ref().update(updates);
+            showToast(`${formatCurrency(amount)} deducted from ${username}'s wallet!`);
+            renderAdminUsersPage(document.getElementById('adminUsersPage'));
+        }
+    </script>
+</body>
+      </html>
