@@ -130,6 +130,15 @@
             color: #64748b;
             z-index: 40;
         }
+
+        .status-badge {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
     </style>
 </head>
 <body class="font-sans">
@@ -163,12 +172,50 @@
         <div class="watermark">Dev by Joy</div>
     </div>
 
+    <!-- Deposit Modal -->
+    <div id="depositMoneyModal" class="modal fixed inset-0 bg-black bg-opacity-80 items-center justify-center z-50">
+        <div class="bg-card p-6 rounded-2xl w-11/12 max-w-sm shadow-2xl">
+            <h3 class="text-2xl font-bold mb-4 text-gradient">Deposit Money</h3>
+            <form id="depositMoneyForm" class="space-y-4">
+                <input type="number" id="deposit-amount" placeholder="Amount (৳)" class="w-full p-3 rounded-lg" required min="10">
+                <select id="deposit-method" class="w-full p-3 rounded-lg" required>
+                    <option value="">Select Payment Method</option>
+                    <option value="bkash">bKash</option>
+                    <option value="nagad">Nagad</option>
+                    <option value="rocket">Rocket</option>
+                </select>
+                <input type="text" id="deposit-phone" placeholder="Your Phone Number (01XXXXXXXXX)" class="w-full p-3 rounded-lg" required pattern="[0-9]{11}" maxlength="11">
+                <input type="text" id="deposit-trxid" placeholder="Transaction ID" class="w-full p-3 rounded-lg" required>
+                <div class="bg-gradient-to-r from-cyan-900/30 to-teal-900/30 border border-cyan-500/30 p-3 rounded-lg">
+                    <p class="text-sm text-cyan-300 mb-2"><i class="fas fa-info-circle mr-1"></i> Instructions:</p>
+                    <p class="text-xs text-gray-300">1. Send money to: <span class="font-mono text-teal-300 font-bold">01712345678</span></p>
+                    <p class="text-xs text-gray-300">2. Enter transaction ID above</p>
+                    <p class="text-xs text-gray-300">3. Admin will approve within 5-10 minutes</p>
+                </div>
+                <button type="submit" class="w-full text-white bg-gradient-to-r from-green-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">Submit Deposit Request</button>
+                <button type="button" onclick="toggleModal('depositMoneyModal', false)" class="w-full bg-gray-700 hover:bg-gray-600 p-3 rounded-lg font-semibold">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Withdraw Modal -->
     <div id="withdrawMoneyModal" class="modal fixed inset-0 bg-black bg-opacity-80 items-center justify-center z-50">
         <div class="bg-card p-6 rounded-2xl w-11/12 max-w-sm shadow-2xl">
             <h3 class="text-2xl font-bold mb-4 text-gradient">Request Withdrawal</h3>
             <form id="withdrawMoneyForm" class="space-y-4">
-                <input type="number" id="withdraw-amount" placeholder="Amount (৳)" class="w-full p-3 rounded-lg" required>
-                <input type="text" id="withdraw-details" placeholder="bKash/Nagad Number" class="w-full p-3 rounded-lg" required>
+                <input type="number" id="withdraw-amount" placeholder="Amount (৳)" class="w-full p-3 rounded-lg" required min="100">
+                <select id="withdraw-method" class="w-full p-3 rounded-lg" required>
+                    <option value="">Select Payment Method</option>
+                    <option value="bkash">bKash</option>
+                    <option value="nagad">Nagad</option>
+                    <option value="rocket">Rocket</option>
+                </select>
+                <input type="text" id="withdraw-phone" placeholder="Your Phone Number (01XXXXXXXXX)" class="w-full p-3 rounded-lg" required pattern="[0-9]{11}" maxlength="11">
+                <div class="bg-gradient-to-r from-orange-900/30 to-red-900/30 border border-orange-500/30 p-3 rounded-lg">
+                    <p class="text-sm text-orange-300 mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Note:</p>
+                    <p class="text-xs text-gray-300">Minimum withdrawal: ৳100</p>
+                    <p class="text-xs text-gray-300">Processing time: 1-24 hours</p>
+                </div>
                 <button type="submit" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">Request Withdrawal</button>
                 <button type="button" onclick="toggleModal('withdrawMoneyModal', false)" class="w-full bg-gray-700 hover:bg-gray-600 p-3 rounded-lg font-semibold">Cancel</button>
             </form>
@@ -378,7 +425,7 @@ const firebaseConfig = {
                             <div class="bg-card border-l-4 ${t.status === 'Live' ? 'border-red-500' : 'border-blue-500'} p-4 shadow-xl rounded-r-2xl card-hover">
                                 <div class="flex justify-between items-center mb-2">
                                     <h3 class="font-bold text-lg text-white">${t.title}</h3>
-                                    <span class="text-xs font-bold ${t.status === 'Live' ? 'text-red-300 bg-red-900/50 border-red-500' : 'text-yellow-300 bg-yellow-900/50 border-yellow-500'} px-3 py-1 rounded-full border">
+                                    <span class="text-xs font-bold ${t.status === 'Live' ? 'text-red-300 bg-red-900/50 border-red-500' : 'text-yellow-300 bg-yellow-900/50 border-yellow-500'} px-3 py-1 rounded-full border status-badge">
                                         ${t.status === 'Live' ? '<i class="fas fa-circle mr-1" style="font-size: 8px;"></i>' : ''}${t.status}
                                     </span>
                                 </div>
@@ -493,6 +540,9 @@ const firebaseConfig = {
                         <p id="wallet-main-balance" class="text-6xl font-bold tracking-tight">${formatCurrency(currentUserData.wallet_balance || 0)}</p>
                     </div>
                     <div class="flex gap-4 mb-6">
+                        <button onclick="toggleModal('depositMoneyModal', true)" class="flex-1 text-white bg-gradient-to-r from-green-500 to-teal-500 font-semibold p-4 rounded-xl shadow-lg btn-animated">
+                            <i class="fas fa-arrow-circle-up mr-2"></i>Deposit
+                        </button>
                         <button onclick="toggleModal('withdrawMoneyModal', true)" class="flex-1 text-white bg-gradient-to-r from-orange-500 to-red-500 font-semibold p-4 rounded-xl shadow-lg btn-animated">
                             <i class="fas fa-arrow-circle-down mr-2"></i>Withdraw
                         </button>
@@ -525,6 +575,7 @@ const firebaseConfig = {
 
         function renderProfilePage(container) {
             if (!currentUserData) return;
+            const isAdmin = currentUserData.role === 'admin';
             container.innerHTML = `
                 <div class="p-4 space-y-6 min-h-screen">
                     <h2 class="text-3xl font-bold mb-6 text-gradient">My Profile</h2>
@@ -533,6 +584,7 @@ const firebaseConfig = {
                             <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 flex items-center justify-center text-4xl text-white glow">
                                 <i class="fas fa-user"></i>
                             </div>
+                            ${isAdmin ? '<span class="inline-block mt-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold"><i class="fas fa-crown mr-1"></i>Admin</span>' : ''}
                         </div>
                         <div class="space-y-4">
                             <div class="bg-teal-900/20 border border-teal-500/30 p-4 rounded-lg">
@@ -545,6 +597,10 @@ const firebaseConfig = {
                             </div>
                         </div>
                     </div>
+                    ${isAdmin ? `
+                    <a href="admin.html" class="block w-full text-center text-white bg-gradient-to-r from-purple-500 to-pink-500 p-4 rounded-2xl font-semibold shadow-xl btn-animated">
+                        <i class="fas fa-shield-alt mr-2"></i>Open Admin Panel
+                    </a>` : ''}
                     <div class="bg-card p-4 rounded-2xl shadow-xl">
                         <h3 class="text-xl font-bold mb-4">Account Settings</h3>
                         <button onclick="changePassword()" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-4 rounded-lg font-semibold btn-animated">
@@ -582,7 +638,8 @@ const firebaseConfig = {
                     db.ref('users/' + cred.user.uid).set({ 
                         username: signupUsername.value, 
                         email: signupEmail.value, 
-                        wallet_balance: 0, 
+                        wallet_balance: 0,
+                        role: 'user',
                         created_at: new Date().toISOString() 
                     })
                 ).catch(err => showToast(err.message, true)); 
@@ -609,7 +666,7 @@ const firebaseConfig = {
             event.preventDefault();
             const user = auth.currentUser;
             if (!user) return showToast('You must be logged in!', true);
-            if (currentUserData.wallet_balance < entryFee) return showToast('Insufficient balance! Contact admin to add funds.', true);
+            if (currentUserData.wallet_balance < entryFee) return showToast('Insufficient balance! Please deposit money first.', true);
             if ((await db.ref(`participants/${tournamentId}/${user.uid}`).once('value')).exists()) return showToast("You've already joined this tournament!", true);
             const updates = {
                 [`/users/${user.uid}/wallet_balance`]: currentUserData.wallet_balance - entryFee,
@@ -625,27 +682,55 @@ const firebaseConfig = {
             showToast('Successfully joined tournament!');
         }
 
-        async function updateWallet(amount, type, description) {
-            const newBalance = currentUserData.wallet_balance + (type === 'credit' ? amount : -amount);
-            const updates = {
-                [`/users/${currentUserData.uid}/wallet_balance`]: newBalance,
-                [`/transactions/${currentUserData.uid}/${db.ref().child('transactions').push().key}`]: { 
-                    amount, 
-                    type, 
-                    description, 
-                    created_at: new Date().toISOString() 
-                }
+        async function depositMoney(event) {
+            event.preventDefault();
+            const amount = Number(document.getElementById('deposit-amount').value);
+            const method = document.getElementById('deposit-method').value;
+            const phone = document.getElementById('deposit-phone').value;
+            const trxId = document.getElementById('deposit-trxid').value;
+            
+            if (amount < 10) return showToast('Minimum deposit amount is ৳10', true);
+            
+            const requestData = {
+                user_id: auth.currentUser.uid,
+                username: currentUserData.username,
+                amount: amount,
+                payment_method: method,
+                phone_number: phone,
+                transaction_id: trxId,
+                status: 'pending',
+                type: 'deposit',
+                created_at: new Date().toISOString()
             };
-            await db.ref().update(updates);
+            
+            await db.ref('payment_requests').push(requestData);
+            showToast('Deposit request submitted! Admin will approve within 5-10 minutes.');
+            toggleModal('depositMoneyModal', false);
+            event.target.reset();
         }
 
         async function withdrawMoney(event) {
             event.preventDefault();
             const amount = Number(document.getElementById('withdraw-amount').value);
-            if (amount <= 0) return showToast('Please enter a valid amount', true);
+            const method = document.getElementById('withdraw-method').value;
+            const phone = document.getElementById('withdraw-phone').value;
+            
+            if (amount < 100) return showToast('Minimum withdrawal amount is ৳100', true);
             if (amount > currentUserData.wallet_balance) return showToast('Insufficient balance!', true);
-            await updateWallet(amount, 'debit', 'Withdrawal request submitted');
-            showToast('Withdrawal request submitted! Admin will process it soon.');
+            
+            const requestData = {
+                user_id: auth.currentUser.uid,
+                username: currentUserData.username,
+                amount: amount,
+                payment_method: method,
+                phone_number: phone,
+                status: 'pending',
+                type: 'withdraw',
+                created_at: new Date().toISOString()
+            };
+            
+            await db.ref('payment_requests').push(requestData);
+            showToast('Withdrawal request submitted! Processing time: 1-24 hours.');
             toggleModal('withdrawMoneyModal', false);
             event.target.reset();
         }
@@ -658,6 +743,7 @@ const firebaseConfig = {
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('depositMoneyForm')?.addEventListener('submit', depositMoney);
             document.getElementById('withdrawMoneyForm')?.addEventListener('submit', withdrawMoney);
         });
     </script>
