@@ -1,751 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NX Tournament</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maintenance Mode</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
 
-    <style>
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(20, 184, 166, 0.5); }
-            50% { box-shadow: 0 0 30px rgba(20, 184, 166, 0.8); }
-        }
-        @keyframes slide-in {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes gradient-shift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        body { 
-            -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; overflow-x: hidden;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-            background-size: 200% 200%;
-            animation: gradient-shift 15s ease infinite;
-            color: #e2e8f0;
-        }
-        
-        #app-container {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
-        }
-        
-        .page { display: none; animation: slide-in 0.5s ease; } 
-        .page.active { display: block; } 
-        .modal { display: none; } 
-        .modal.active { display: flex; }
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(20, 184, 166, 0.3);
-        }
+    body {
+      font-family: "Poppins", sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #00111f, #003366, #00aaff);
+      background-size: 300% 300%;
+      animation: bgMove 20s infinite alternate;
+      color: #fff;
+      overflow: hidden;
+      position: relative;
+    }
 
-        .btn-animated {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        .btn-animated:hover {
-            transform: scale(1.05);
-        }
-        .btn-animated::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        .btn-animated:hover::before {
-            width: 300px;
-            height: 300px;
-        }
+    /* Background animation */
+    @keyframes bgMove {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
 
-        .floating { animation: float 3s ease-in-out infinite; }
-        .glow { animation: pulse-glow 2s ease-in-out infinite; }
+    /* Floating particles */
+    .particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: #0ff;
+      box-shadow: 0 0 15px #0ff;
+      border-radius: 50%;
+      animation: float 6s infinite ease-in-out;
+      opacity: 0.5;
+    }
 
-        ::-webkit-scrollbar { width: 8px; } 
-        ::-webkit-scrollbar-track { background: #1e293b; } 
-        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #06b6d4, #14b8a6); border-radius: 10px; }
-        
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; margin: 0; 
-        }
-        input[type=number] { -moz-appearance: textfield; }
+    @keyframes float {
+      0% { transform: translateY(0); opacity: 0.4; }
+      50% { transform: translateY(-40px); opacity: 1; }
+      100% { transform: translateY(0); opacity: 0.4; }
+    }
 
-        .bg-card { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(20, 184, 166, 0.2); }
-        .text-gradient { background: linear-gradient(135deg, #06b6d4, #14b8a6, #10b981); background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 5s ease infinite; }
-        
-        input, select {
-            background: rgba(30, 41, 59, 0.8) !important;
-            border: 1px solid rgba(20, 184, 166, 0.3);
-            color: #e2e8f0;
-            transition: all 0.3s ease;
-        }
-        input:focus, select:focus {
-            border-color: #14b8a6;
-            box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
-        }
-        input::placeholder { color: #64748b; }
+    /* Container */
+    .container {
+      text-align: center;
+      z-index: 10;
+      animation: fadeIn 2s ease-in-out;
+    }
 
-        #app-header, #user-bottom-nav {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
-            border-color: rgba(20, 184, 166, 0.2);
-        }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-        .nav-item {
-            transition: all 0.3s ease;
-        }
-        .nav-item:hover {
-            transform: translateY(-3px);
-        }
+    /* Icon */
+    .icon {
+      font-size: 4.5em;
+      margin-bottom: 15px;
+      animation: spin 4s linear infinite;
+      text-shadow: 0 0 15px #00e6ff, 0 0 30px #00e6ff;
+    }
 
-        .watermark {
-            position: fixed;
-            bottom: 70px;
-            right: 10px;
-            font-size: 10px;
-            opacity: 0.5;
-            color: #64748b;
-            z-index: 40;
-        }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
 
-        .status-badge {
-            animation: pulse 2s ease-in-out infinite;
-        }
+    /* Title */
+    h1 {
+      font-size: 3em;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #a7eeff;
+      text-shadow: 0 0 10px #00d9ff, 0 0 40px #0099cc;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-    </style>
+    @keyframes glow {
+      0% { text-shadow: 0 0 10px #00d9ff; }
+      100% { text-shadow: 0 0 25px #00f6ff; }
+    }
+
+    /* Sub text */
+    p {
+      font-size: 1.2em;
+      color: #d9faff;
+      margin-bottom: 20px;
+      opacity: 0.9;
+    }
+
+    /* Loader dots */
+    .dots span {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin: 0 4px;
+      background: #00eaff;
+      border-radius: 50%;
+      animation: bounce 1.5s infinite;
+      box-shadow: 0 0 10px #00eaff;
+    }
+
+    .dots span:nth-child(2) { animation-delay: 0.3s; }
+    .dots span:nth-child(3) { animation-delay: 0.6s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    /* Watermark */
+    .watermark {
+      position: absolute;
+      bottom: 12px;
+      right: 20px;
+      font-size: 0.9em;
+      color: rgba(255,255,255,0.35);
+      font-weight: 300;
+      text-shadow: 0 0 10px #007799;
+      pointer-events: none;
+    }
+  </style>
 </head>
-<body class="font-sans">
 
-    <div id="app-container" class="max-w-md mx-auto min-h-screen shadow-2xl">
+<body>
 
-        <header id="app-header" class="p-4 flex justify-between items-center sticky top-0 z-50 border-b" style="display: none;">
-            <h1 class="text-xl font-bold text-gradient">NX Tournament</h1>
-            <div id="wallet-balance-header" class="px-4 py-2 bg-card rounded-full text-sm font-semibold glow">
-                <i class="fas fa-wallet text-teal-400"></i> ৳...
-            </div>
-        </header>
+  <!-- Neon floating particles -->
+  <div class="particle" style="top:20%; left:10%; animation-duration:7s;"></div>
+  <div class="particle" style="top:70%; left:30%; animation-duration:5s;"></div>
+  <div class="particle" style="top:40%; left:80%; animation-duration:6s;"></div>
+  <div class="particle" style="top:85%; left:60%; animation-duration:8s;"></div>
 
-        <main id="main-content" class="pb-20">
-            <div id="loginPage" class="page"></div>
-            <div id="homePage" class="page"></div>
-            <div id="myTournamentsPage" class="page"></div>
-            <div id="walletPage" class="page"></div>
-            <div id="profilePage" class="page"></div>
-        </main>
+  <div class="container">
+    <div class="icon">⚙️</div>
 
-        <nav id="user-bottom-nav" class="fixed bottom-0 left-0 right-0 border-t max-w-md mx-auto" style="display: none;">
-            <div class="flex justify-around p-3">
-                <a href="#" class="nav-item text-center" onclick="navigateTo('homePage')"><i class="fas fa-home fa-lg"></i><span class="block text-xs mt-1">Home</span></a>
-                <a href="#" class="nav-item text-center" onclick="navigateTo('myTournamentsPage')"><i class="fas fa-trophy fa-lg"></i><span class="block text-xs mt-1">Tournaments</span></a>
-                <a href="#" class="nav-item text-center" onclick="navigateTo('walletPage')"><i class="fas fa-wallet fa-lg"></i><span class="block text-xs mt-1">Wallet</span></a>
-                <a href="#" class="nav-item text-center" onclick="navigateTo('profilePage')"><i class="fas fa-user-cog fa-lg"></i><span class="block text-xs mt-1">Profile</span></a>
-            </div>
-        </nav>
+    <h1>We'll Be Back Soon</h1>
 
-        <div class="watermark">Dev by Joy</div>
+    <p>Our app/web is undergoing maintenance. Thank you for your patience.</p>
+
+    <div class="dots">
+      <span></span>
+      <span></span>
+      <span></span>
     </div>
+  </div>
 
-    <!-- Deposit Modal -->
-    <div id="depositMoneyModal" class="modal fixed inset-0 bg-black bg-opacity-80 items-center justify-center z-50">
-        <div class="bg-card p-6 rounded-2xl w-11/12 max-w-sm shadow-2xl">
-            <h3 class="text-2xl font-bold mb-4 text-gradient">Deposit Money</h3>
-            <form id="depositMoneyForm" class="space-y-4">
-                <input type="number" id="deposit-amount" placeholder="Amount (৳)" class="w-full p-3 rounded-lg" required min="10">
-                <select id="deposit-method" class="w-full p-3 rounded-lg" required>
-                    <option value="">Select Payment Method</option>
-                    <option value="bkash">bKash</option>
-                    <option value="nagad">Nagad</option>
-                    <option value="rocket">Rocket</option>
-                </select>
-                <input type="text" id="deposit-phone" placeholder="Your Phone Number (01XXXXXXXXX)" class="w-full p-3 rounded-lg" required pattern="[0-9]{11}" maxlength="11">
-                <input type="text" id="deposit-trxid" placeholder="Transaction ID" class="w-full p-3 rounded-lg" required>
-                <div class="bg-gradient-to-r from-cyan-900/30 to-teal-900/30 border border-cyan-500/30 p-3 rounded-lg">
-                    <p class="text-sm text-cyan-300 mb-2"><i class="fas fa-info-circle mr-1"></i> Instructions:</p>
-                    <p class="text-xs text-gray-300">1. Send money to: <span class="font-mono text-teal-300 font-bold">01712345678</span></p>
-                    <p class="text-xs text-gray-300">2. Enter transaction ID above</p>
-                    <p class="text-xs text-gray-300">3. Admin will approve within 5-10 minutes</p>
-                </div>
-                <button type="submit" class="w-full text-white bg-gradient-to-r from-green-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">Submit Deposit Request</button>
-                <button type="button" onclick="toggleModal('depositMoneyModal', false)" class="w-full bg-gray-700 hover:bg-gray-600 p-3 rounded-lg font-semibold">Cancel</button>
-            </form>
-        </div>
-    </div>
+  <div class="watermark">Made by Joy • InfinityForge</div>
 
-    <!-- Withdraw Modal -->
-    <div id="withdrawMoneyModal" class="modal fixed inset-0 bg-black bg-opacity-80 items-center justify-center z-50">
-        <div class="bg-card p-6 rounded-2xl w-11/12 max-w-sm shadow-2xl">
-            <h3 class="text-2xl font-bold mb-4 text-gradient">Request Withdrawal</h3>
-            <form id="withdrawMoneyForm" class="space-y-4">
-                <input type="number" id="withdraw-amount" placeholder="Amount (৳)" class="w-full p-3 rounded-lg" required min="100">
-                <select id="withdraw-method" class="w-full p-3 rounded-lg" required>
-                    <option value="">Select Payment Method</option>
-                    <option value="bkash">bKash</option>
-                    <option value="nagad">Nagad</option>
-                    <option value="rocket">Rocket</option>
-                </select>
-                <input type="text" id="withdraw-phone" placeholder="Your Phone Number (01XXXXXXXXX)" class="w-full p-3 rounded-lg" required pattern="[0-9]{11}" maxlength="11">
-                <div class="bg-gradient-to-r from-orange-900/30 to-red-900/30 border border-orange-500/30 p-3 rounded-lg">
-                    <p class="text-sm text-orange-300 mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Note:</p>
-                    <p class="text-xs text-gray-300">Minimum withdrawal: ৳100</p>
-                    <p class="text-xs text-gray-300">Processing time: 1-24 hours</p>
-                </div>
-                <button type="submit" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">Request Withdrawal</button>
-                <button type="button" onclick="toggleModal('withdrawMoneyModal', false)" class="w-full bg-gray-700 hover:bg-gray-600 p-3 rounded-lg font-semibold">Cancel</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="gameModal" class="modal fixed inset-0 bg-black bg-opacity-80 items-center justify-center z-50">
-        <div class="bg-card p-6 rounded-2xl w-11/12 max-w-sm text-center shadow-2xl">
-            <h3 class="text-2xl font-bold mb-4 text-gradient" id="game-modal-title">Play Game</h3>
-            <div id="game-modal-content"></div>
-        </div>
-    </div>
-
-    <div id="toast" class="fixed top-5 right-5 text-white py-3 px-5 rounded-lg shadow-2xl" style="display: none; z-index: 1000;"></div>
-
-    <script>
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.body.style.userSelect = 'none';
-        document.addEventListener('gesturestart', e => e.preventDefault());
-
-const firebaseConfig = {
-  apiKey: "AIzaSyB9ttTQxsCMHoNfYI9Spo0HUMNyTFD942Y",
-  authDomain: "nxtournament-47cd3.firebaseapp.com",
-  databaseURL: "https://nxtournament-47cd3-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "nxtournament-47cd3",
-  storageBucket: "nxtournament-47cd3.firebasestorage.app",
-  messagingSenderId: "843114254203",
-  appId: "1:843114254203:web:d9ffe6a0cbfe5c8f21b7de"
-};
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
-
-        let currentUserData = null;
-        let currentQuiz = null;
-        let currentQuestionIndex = 0;
-        let score = 0;
-
-        function navigateTo(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId)?.classList.add('active');
-            loadPageContent(pageId);
-            document.querySelectorAll('.nav-item').forEach(item => {
-                const isActive = item.getAttribute('onclick').includes(pageId);
-                item.classList.toggle('text-teal-400', isActive);
-                item.classList.toggle('text-gray-400', !isActive);
-            });
-            window.scrollTo(0, 0);
-        }
-
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = `fixed top-5 right-5 text-white py-3 px-5 rounded-lg shadow-2xl ${isError ? 'bg-gradient-to-r from-red-500 to-orange-500' : 'bg-gradient-to-r from-green-500 to-teal-500'}`;
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 3000);
-        }
-
-        function formatCurrency(amount) {
-            return `৳${Number(amount).toLocaleString('en-BD', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
-        }
-
-        function toggleModal(modalId, show) { document.getElementById(modalId).classList.toggle('active', show); }
-
-        auth.onAuthStateChanged(async user => {
-            const showApp = !!user;
-            document.getElementById('app-header').style.display = showApp ? 'flex' : 'none';
-            document.getElementById('user-bottom-nav').style.display = showApp ? 'block' : 'none';
-            
-            if (showApp) {
-                db.ref('users/' + user.uid).on('value', snap => {
-                    currentUserData = { uid: user.uid, ...snap.val() };
-                    const newBalanceFormatted = formatCurrency(currentUserData.wallet_balance || 0);
-                    
-                    const headerBalanceEl = document.getElementById('wallet-balance-header');
-                    if (headerBalanceEl) headerBalanceEl.innerHTML = `<i class="fas fa-wallet text-teal-400"></i> ${newBalanceFormatted}`;
-                    
-                    const mainBalanceEl = document.getElementById('wallet-main-balance');
-                    if (mainBalanceEl) mainBalanceEl.textContent = newBalanceFormatted;
-                });
-                navigateTo('homePage');
-            } else {
-                currentUserData = null;
-                navigateTo('loginPage');
-            }
-        });
-
-        function loadPageContent(pageId) {
-            const pageContainer = document.getElementById(pageId);
-            if (!pageContainer) return;
-            switch (pageId) {
-                case 'loginPage': renderLoginPage(pageContainer); break;
-                case 'homePage': renderHomePage(pageContainer); break;
-                case 'myTournamentsPage': renderMyTournamentsPage(pageContainer); break;
-                case 'walletPage': renderWalletPage(pageContainer); break;
-                case 'profilePage': renderProfilePage(pageContainer); break;
-            }
-        }
-
-        function renderLoginPage(container) {
-            container.innerHTML = `
-                <div class="p-6 h-screen flex flex-col justify-center">
-                    <div class="text-center mb-8 floating">
-                        <div class="w-32 h-32 mx-auto rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 flex items-center justify-center text-6xl glow">
-                            <i class="fas fa-trophy text-white"></i>
-                        </div>
-                    </div>
-                    <h1 class="text-5xl font-bold text-center mb-2 text-gradient">NX Tournament</h1>
-                    <p class="text-center text-gray-400 mb-8">Compete. Win. Dominate.</p>
-                    
-                    <div class="bg-card p-6 rounded-2xl shadow-2xl">
-                        <div class="flex border-b border-teal-500/30 mb-4">
-                            <button id="loginTabBtn" class="flex-1 py-3 text-center font-semibold border-b-2 border-teal-500 text-teal-400 transition-all">Login</button>
-                            <button id="signupTabBtn" class="flex-1 py-3 text-center font-semibold border-b-2 border-transparent text-gray-400 transition-all">Sign Up</button>
-                        </div>
-                        
-                        <form id="loginForm" class="space-y-4">
-                            <input type="email" id="loginEmail" placeholder="Email" class="w-full p-3 rounded-lg" required>
-                            <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 rounded-lg" required>
-                            <button type="submit" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">Login</button>
-                        </form>
-                        
-                        <form id="signupForm" class="space-y-4" style="display:none;">
-                            <input type="text" id="signupUsername" placeholder="Username" class="w-full p-3 rounded-lg" required>
-                            <input type="email" id="signupEmail" placeholder="Email" class="w-full p-3 rounded-lg" required>
-                            <input type="password" id="signupPassword" placeholder="Password (min. 6 chars)" class="w-full p-3 rounded-lg" required>
-                            <button type="submit" class="w-full text-white bg-gradient-to-r from-green-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">Create Account</button>
-                        </form>
-                    </div>
-                </div>`;
-            
-            attachLoginListeners();
-        }
-
-        async function renderHomePage(container) {
-            container.innerHTML = `
-                <div class="p-4 min-h-screen">
-                    <h2 class="text-3xl font-bold mb-6 text-gradient">Upcoming Tournaments</h2>
-                    <div id="tournament-list" class="space-y-4"></div>
-                </div>`;
-            
-            const listEl = document.getElementById('tournament-list');
-            listEl.innerHTML = `<div class="text-center py-8"><i class="fas fa-spinner fa-spin fa-3x text-teal-500"></i></div>`;
-            
-            const tournaments = (await db.ref('tournaments').orderByChild('status').equalTo('Upcoming').once('value')).val();
-            if (!tournaments) {
-                listEl.innerHTML = `<div class="text-center py-8"><i class="fas fa-ghost fa-3x text-gray-600 mb-4"></i><p class="text-gray-400">No upcoming tournaments right now.</p></div>`;
-                return;
-            }
-            
-            listEl.innerHTML = Object.entries(tournaments).map(([id, t]) => `
-                <div class="bg-card rounded-2xl shadow-xl overflow-hidden card-hover">
-                    <div class="p-4 bg-gradient-to-r from-cyan-600/20 to-teal-600/20">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="font-bold text-xl text-white">${t.title}</h3>
-                                <p class="text-gray-300"><i class="fas fa-gamepad mr-2"></i>${t.game_name}</p>
-                            </div>
-                            <span class="text-sm font-bold text-teal-300 bg-teal-900/50 px-3 py-1 rounded-full border border-teal-500 glow">
-                                ${formatCurrency(t.prize_pool)}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="p-4">
-                        <div class="grid grid-cols-2 gap-4 text-sm mb-4">
-                            <div class="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 p-3 rounded-lg border border-yellow-500/30">
-                                <p class="text-gray-400"><i class="fas fa-coins mr-1 text-yellow-400"></i>Entry Fee</p>
-                                <p class="font-bold text-white">${formatCurrency(t.entry_fee)}</p>
-                            </div>
-                            <div class="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 p-3 rounded-lg border border-blue-500/30">
-                                <p class="text-gray-400"><i class="fas fa-clock mr-1 text-blue-400"></i>Match Time</p>
-                                <p class="font-bold text-white">${new Date(t.match_time).toLocaleDateString()}</p>
-                            </div>
-                        </div>
-                        <form onsubmit="joinTournament(event, '${id}', ${t.entry_fee})">
-                            <button type="submit" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 font-bold py-3 rounded-lg btn-animated">
-                                <i class="fas fa-sign-in-alt mr-2"></i>Join Now
-                            </button>
-                        </form>
-                    </div>
-                </div>`).join('');
-        }
-
-        async function renderMyTournamentsPage(container) {
-            container.innerHTML = `
-                <div class="p-4 min-h-screen">
-                    <h2 class="text-3xl font-bold mb-6 text-gradient">My Tournaments</h2>
-                    <div class="flex border-b border-teal-500/30 mb-4">
-                        <button id="upcomingLiveTab" class="flex-1 py-3 text-center font-semibold border-b-2 border-teal-500 text-teal-400 transition-all">Active</button>
-                        <button id="completedTab" class="flex-1 py-3 text-center font-semibold border-b-2 border-transparent text-gray-400 transition-all">Completed</button>
-                    </div>
-                    <div id="upcomingLiveContent" class="space-y-4"></div>
-                    <div id="completedContent" class="space-y-4" style="display:none;"></div>
-                </div>`;
-            
-            attachMyTournamentsListeners();
-            const allTournaments = (await db.ref('tournaments').once('value')).val() || {};
-            let upcomingHtml = '', completedHtml = '', hasUpcoming = false, hasCompleted = false;
-            
-            for (const tId in allTournaments) {
-                const participant = (await db.ref(`participants/${tId}/${auth.currentUser.uid}`).once('value')).val();
-                if (participant) {
-                    const t = allTournaments[tId];
-                    if (t.status !== 'Completed') {
-                        hasUpcoming = true;
-                        upcomingHtml += `
-                            <div class="bg-card border-l-4 ${t.status === 'Live' ? 'border-red-500' : 'border-blue-500'} p-4 shadow-xl rounded-r-2xl card-hover">
-                                <div class="flex justify-between items-center mb-2">
-                                    <h3 class="font-bold text-lg text-white">${t.title}</h3>
-                                    <span class="text-xs font-bold ${t.status === 'Live' ? 'text-red-300 bg-red-900/50 border-red-500' : 'text-yellow-300 bg-yellow-900/50 border-yellow-500'} px-3 py-1 rounded-full border status-badge">
-                                        ${t.status === 'Live' ? '<i class="fas fa-circle mr-1" style="font-size: 8px;"></i>' : ''}${t.status}
-                                    </span>
-                                </div>
-                                <p class="text-gray-400 mb-3"><i class="fas fa-gamepad mr-2"></i>${t.game_name}</p>
-                                ${t.status === 'Live' && t.room_id ? `
-                                    <div class="bg-gradient-to-r from-teal-900/30 to-cyan-900/30 p-3 rounded-lg border border-teal-500/30 mb-3">
-                                        <p class="text-sm text-gray-300">Room ID: <span class="font-mono text-teal-300 font-bold">${t.room_id}</span></p>
-                                        <p class="text-sm text-gray-300">Password: <span class="font-mono text-teal-300 font-bold">${t.room_password}</span></p>
-                                    </div>
-                                    <button onclick="playGame('${tId}', '${t.game_type}')" class="w-full text-white bg-gradient-to-r from-green-500 to-teal-500 font-bold py-3 rounded-lg btn-animated">
-                                        <i class="fas fa-play-circle mr-2"></i>Play Game
-                                    </button>
-                                ` : `<p class="text-sm text-gray-500 italic">Room details will appear when the match is Live.</p>`}
-                            </div>`;
-                    } else {
-                        hasCompleted = true;
-                        completedHtml += `
-                            <div class="bg-card p-4 flex justify-between items-center shadow-xl rounded-lg card-hover">
-                                <div>
-                                    <h3 class="font-bold text-white">${t.title}</h3>
-                                    <p class="text-sm text-gray-400"><i class="fas fa-calendar mr-1"></i>${new Date(t.match_time).toLocaleDateString()}</p>
-                                </div>
-                                <span class="font-semibold ${participant.status === 'Winner' ? 'text-green-400 bg-green-900/30 px-3 py-1 rounded-full border border-green-500' : 'text-gray-400'}">${participant.status || 'Completed'}</span>
-                            </div>`;
-                    }
-                }
-            }
-            
-            document.getElementById('upcomingLiveContent').innerHTML = hasUpcoming ? upcomingHtml : `<p class="text-center py-8 text-gray-400">You haven't joined any active tournaments.</p>`;
-            document.getElementById('completedContent').innerHTML = hasCompleted ? completedHtml : `<p class="text-center py-8 text-gray-400">No completed tournaments to show.</p>`;
-        }
-        
-        async function playGame(tournamentId, gameType) {
-            if (gameType === 'fps_game') {
-                const userId = auth.currentUser.uid;
-                window.location.href = `freefiregame.html?tournamentId=${tournamentId}&userId=${userId}`;
-                return; 
-            }
-
-            const gameModalContent = document.getElementById('game-modal-content');
-            if (gameType === 'quiz') {
-                const t = (await db.ref(`tournaments/${tournamentId}`).once('value')).val();
-                currentQuiz = { id: tournamentId, questions: t.quiz };
-                currentQuestionIndex = 0; score = 0;
-                renderQuizQuestion();
-            } else { 
-                gameModalContent.innerHTML = `
-                    <p class="mb-4 text-gray-300">Choose your weapon!</p>
-                    <div class="flex justify-around">
-                        <button onclick="playRPS('${tournamentId}', 'Rock')" class="text-5xl p-4 hover:text-teal-400 transition-all hover:scale-110"><i class="fas fa-hand-rock"></i></button>
-                        <button onclick="playRPS('${tournamentId}', 'Paper')" class="text-5xl p-4 hover:text-teal-400 transition-all hover:scale-110"><i class="fas fa-hand-paper"></i></button>
-                        <button onclick="playRPS('${tournamentId}', 'Scissors')" class="text-5xl p-4 hover:text-teal-400 transition-all hover:scale-110"><i class="fas fa-hand-scissors"></i></button>
-                    </div>`;
-            }
-            toggleModal('gameModal', true);
-        }
-
-        function renderQuizQuestion() {
-            const question = currentQuiz.questions[currentQuestionIndex];
-            if (!question) { endQuiz(); return; }
-            document.getElementById('game-modal-content').innerHTML = `
-                <h4 class="text-xl font-bold mb-4 text-white">${question.question}</h4>` + 
-                question.options.map((opt, i) => `
-                    <button onclick="submitAnswer(${i})" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 p-3 rounded-lg mb-2 btn-animated">${opt}</button>
-                `).join('');
-        }
-
-        function submitAnswer(selectedIndex) {
-            if (selectedIndex === currentQuiz.questions[currentQuestionIndex].correct) score++;
-            currentQuestionIndex++;
-            renderQuizQuestion();
-        }
-
-        async function endQuiz() {
-            document.getElementById('game-modal-content').innerHTML = `
-                <div class="floating">
-                    <i class="fas fa-check-circle text-6xl text-green-400 mb-4"></i>
-                </div>
-                <h3 class="text-2xl font-bold text-white">Quiz Complete!</h3>
-                <p class="my-4 text-lg text-gray-300">Your final score is:</p>
-                <p class="text-teal-400 font-bold text-5xl mb-4 glow">${score}</p>
-                <button onclick="toggleModal('gameModal', false)" class="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg">Close</button>`;
-            await db.ref(`participants/${currentQuiz.id}/${auth.currentUser.uid}`).update({ gameResult: `Score: ${score}` });
-        }
-
-        async function playRPS(tournamentId, playerChoice) {
-            const choices = ['Rock', 'Paper', 'Scissors'];
-            const computerChoice = choices[Math.floor(Math.random() * 3)];
-            let result = 'Draw';
-            if ((playerChoice === 'Rock' && computerChoice === 'Scissors') || 
-                (playerChoice === 'Paper' && computerChoice === 'Rock') || 
-                (playerChoice === 'Scissors' && computerChoice === 'Paper')) result = 'Win';
-            else if (playerChoice !== computerChoice) result = 'Loss';
-            
-            document.getElementById('game-modal-content').innerHTML = `
-                <div class="space-y-4">
-                    <p class="text-gray-300">You chose: <span class="text-teal-400 font-bold">${playerChoice}</span></p>
-                    <p class="text-gray-300">Computer chose: <span class="text-cyan-400 font-bold">${computerChoice}</span></p>
-                    <h4 class="text-3xl font-bold mt-4 ${result === 'Win' ? 'text-green-400' : result === 'Loss' ? 'text-red-400' : 'text-yellow-400'}">You ${result}!</h4>
-                    <button onclick="toggleModal('gameModal', false)" class="mt-4 bg-gray-700 hover:bg-gray-600 px-6 py-2 rounded-lg">Close</button>
-                </div>`;
-            await db.ref(`participants/${tournamentId}/${auth.currentUser.uid}`).update({ gameResult: result });
-        }
-
-        function renderWalletPage(container) {
-            if (!currentUserData) return;
-            container.innerHTML = `
-                <div class="p-4 min-h-screen">
-                    <h2 class="text-3xl font-bold mb-6 text-gradient">My Wallet</h2>
-                    <div class="bg-gradient-to-br from-cyan-600 to-teal-600 text-white p-8 rounded-2xl text-center shadow-2xl mb-6 glow">
-                        <p class="text-lg text-cyan-100 mb-2">Current Balance</p>
-                        <p id="wallet-main-balance" class="text-6xl font-bold tracking-tight">${formatCurrency(currentUserData.wallet_balance || 0)}</p>
-                    </div>
-                    <div class="flex gap-4 mb-6">
-                        <button onclick="toggleModal('depositMoneyModal', true)" class="flex-1 text-white bg-gradient-to-r from-green-500 to-teal-500 font-semibold p-4 rounded-xl shadow-lg btn-animated">
-                            <i class="fas fa-arrow-circle-up mr-2"></i>Deposit
-                        </button>
-                        <button onclick="toggleModal('withdrawMoneyModal', true)" class="flex-1 text-white bg-gradient-to-r from-orange-500 to-red-500 font-semibold p-4 rounded-xl shadow-lg btn-animated">
-                            <i class="fas fa-arrow-circle-down mr-2"></i>Withdraw
-                        </button>
-                    </div>
-                    <div class="bg-card p-4 rounded-2xl">
-                        <h3 class="text-xl font-bold mb-4 flex items-center"><i class="fas fa-history mr-2 text-teal-400"></i>Transaction History</h3>
-                        <div id="transaction-list" class="space-y-2"></div>
-                    </div>
-                </div>`;
-            
-            const listEl = document.getElementById('transaction-list');
-            const transactionsRef = db.ref(`transactions/${currentUserData.uid}`).orderByChild('created_at').limitToLast(20);
-
-            transactionsRef.on('value', snap => {
-                const transactions = snap.val();
-                if (!transactions) {
-                    listEl.innerHTML = `<p class="text-center py-8 text-gray-400">No transactions yet.</p>`;
-                    return;
-                }
-                listEl.innerHTML = Object.values(transactions).sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).map(t => `
-                    <div class="p-3 rounded-lg flex justify-between items-center shadow-sm ${t.type === 'credit' ? 'bg-green-900/20 border-l-4 border-green-400' : 'bg-red-900/20 border-l-4 border-red-400'}">
-                        <div>
-                            <p class="font-semibold text-white">${t.description}</p>
-                            <p class="text-xs text-gray-400"><i class="far fa-clock mr-1"></i>${new Date(t.created_at).toLocaleString()}</p>
-                        </div>
-                        <p class="font-bold ${t.type === 'credit' ? 'text-green-400' : 'text-red-400'}">${t.type === 'credit' ? '+' : '-'}${formatCurrency(t.amount)}</p>
-                    </div>`).join('');
-            });
-        }
-
-        function renderProfilePage(container) {
-            if (!currentUserData) return;
-            const isAdmin = currentUserData.role === 'admin';
-            container.innerHTML = `
-                <div class="p-4 space-y-6 min-h-screen">
-                    <h2 class="text-3xl font-bold mb-6 text-gradient">My Profile</h2>
-                    <div class="bg-card p-6 rounded-2xl shadow-xl">
-                        <div class="text-center mb-4">
-                            <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 flex items-center justify-center text-4xl text-white glow">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            ${isAdmin ? '<span class="inline-block mt-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold"><i class="fas fa-crown mr-1"></i>Admin</span>' : ''}
-                        </div>
-                        <div class="space-y-4">
-                            <div class="bg-teal-900/20 border border-teal-500/30 p-4 rounded-lg">
-                                <p class="text-gray-400 text-sm">Username</p>
-                                <p class="text-xl font-semibold text-teal-300">${currentUserData.username || 'N/A'}</p>
-                            </div>
-                            <div class="bg-teal-900/20 border border-teal-500/30 p-4 rounded-lg">
-                                <p class="text-gray-400 text-sm">Email</p>
-                                <p class="text-lg text-teal-300">${currentUserData.email || 'N/A'}</p>
-                            </div>
-                        </div>
-                    </div>
-                    ${isAdmin ? `
-                    <a href="admin.html" class="block w-full text-center text-white bg-gradient-to-r from-purple-500 to-pink-500 p-4 rounded-2xl font-semibold shadow-xl btn-animated">
-                        <i class="fas fa-shield-alt mr-2"></i>Open Admin Panel
-                    </a>` : ''}
-                    <div class="bg-card p-4 rounded-2xl shadow-xl">
-                        <h3 class="text-xl font-bold mb-4">Account Settings</h3>
-                        <button onclick="changePassword()" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-4 rounded-lg font-semibold btn-animated">
-                            <i class="fas fa-key mr-2"></i>Send Password Reset Email
-                        </button>
-                    </div>
-                    <button onclick="logout()" class="w-full text-white bg-gradient-to-r from-red-500 to-orange-500 p-4 rounded-lg font-semibold btn-animated">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
-                    </button>
-                </div>`;
-        }
-
-        function attachLoginListeners() {
-            const loginTab = document.getElementById('loginTabBtn'), signupTab = document.getElementById('signupTabBtn'), loginForm = document.getElementById('loginForm'), signupForm = document.getElementById('signupForm');
-            loginTab.addEventListener('click', () => { 
-                loginTab.className = "flex-1 py-3 text-center font-semibold border-b-2 border-teal-500 text-teal-400 transition-all"; 
-                signupTab.className = "flex-1 py-3 text-center font-semibold text-gray-400 border-b-2 border-transparent transition-all"; 
-                loginForm.style.display = 'block'; 
-                signupForm.style.display = 'none'; 
-            });
-            signupTab.addEventListener('click', () => { 
-                signupTab.className = "flex-1 py-3 text-center font-semibold border-b-2 border-teal-500 text-teal-400 transition-all"; 
-                loginTab.className = "flex-1 py-3 text-center font-semibold text-gray-400 border-b-2 border-transparent transition-all"; 
-                signupForm.style.display = 'block'; 
-                loginForm.style.display = 'none'; 
-            });
-            loginForm.addEventListener('submit', e => { 
-                e.preventDefault(); 
-                auth.signInWithEmailAndPassword(e.target.loginEmail.value, e.target.loginPassword.value).catch(err => showToast(err.message, true)); 
-            });
-            signupForm.addEventListener('submit', e => { 
-                e.preventDefault(); 
-                const { signupUsername, signupEmail, signupPassword } = e.target; 
-                auth.createUserWithEmailAndPassword(signupEmail.value, signupPassword.value).then(cred => 
-                    db.ref('users/' + cred.user.uid).set({ 
-                        username: signupUsername.value, 
-                        email: signupEmail.value, 
-                        wallet_balance: 0,
-                        role: 'user',
-                        created_at: new Date().toISOString() 
-                    })
-                ).catch(err => showToast(err.message, true)); 
-            });
-        }
-
-        function attachMyTournamentsListeners() {
-            const upcomingTab = document.getElementById('upcomingLiveTab'), completedTab = document.getElementById('completedTab'), upcomingContent = document.getElementById('upcomingLiveContent'), completedContent = document.getElementById('completedContent');
-            upcomingTab.addEventListener('click', () => { 
-                upcomingTab.className="flex-1 py-3 text-center font-semibold border-b-2 border-teal-500 text-teal-400 transition-all"; 
-                completedTab.className="flex-1 py-3 text-center font-semibold text-gray-400 border-b-2 border-transparent transition-all"; 
-                upcomingContent.style.display = 'block'; 
-                completedContent.style.display = 'none'; 
-            });
-            completedTab.addEventListener('click', () => { 
-                completedTab.className="flex-1 py-3 text-center font-semibold border-b-2 border-teal-500 text-teal-400 transition-all"; 
-                upcomingTab.className="flex-1 py-3 text-center font-semibold text-gray-400 border-b-2 border-transparent transition-all"; 
-                completedContent.style.display = 'block'; 
-                upcomingContent.style.display = 'none'; 
-            });
-        }
-
-        async function joinTournament(event, tournamentId, entryFee) {
-            event.preventDefault();
-            const user = auth.currentUser;
-            if (!user) return showToast('You must be logged in!', true);
-            if (currentUserData.wallet_balance < entryFee) return showToast('Insufficient balance! Please deposit money first.', true);
-            if ((await db.ref(`participants/${tournamentId}/${user.uid}`).once('value')).exists()) return showToast("You've already joined this tournament!", true);
-            const updates = {
-                [`/users/${user.uid}/wallet_balance`]: currentUserData.wallet_balance - entryFee,
-                [`/participants/${tournamentId}/${user.uid}`]: { status: 'Participated' },
-                [`/transactions/${user.uid}/${db.ref().child('transactions').push().key}`]: { 
-                    amount: entryFee, 
-                    type: 'debit', 
-                    description: `Entry for: ${event.target.closest('.bg-card').querySelector('h3').textContent}`, 
-                    created_at: new Date().toISOString() 
-                }
-            };
-            await db.ref().update(updates);
-            showToast('Successfully joined tournament!');
-        }
-
-        async function depositMoney(event) {
-            event.preventDefault();
-            const amount = Number(document.getElementById('deposit-amount').value);
-            const method = document.getElementById('deposit-method').value;
-            const phone = document.getElementById('deposit-phone').value;
-            const trxId = document.getElementById('deposit-trxid').value;
-            
-            if (amount < 10) return showToast('Minimum deposit amount is ৳10', true);
-            
-            const requestData = {
-                user_id: auth.currentUser.uid,
-                username: currentUserData.username,
-                amount: amount,
-                payment_method: method,
-                phone_number: phone,
-                transaction_id: trxId,
-                status: 'pending',
-                type: 'deposit',
-                created_at: new Date().toISOString()
-            };
-            
-            await db.ref('payment_requests').push(requestData);
-            showToast('Deposit request submitted! Admin will approve within 5-10 minutes.');
-            toggleModal('depositMoneyModal', false);
-            event.target.reset();
-        }
-
-        async function withdrawMoney(event) {
-            event.preventDefault();
-            const amount = Number(document.getElementById('withdraw-amount').value);
-            const method = document.getElementById('withdraw-method').value;
-            const phone = document.getElementById('withdraw-phone').value;
-            
-            if (amount < 100) return showToast('Minimum withdrawal amount is ৳100', true);
-            if (amount > currentUserData.wallet_balance) return showToast('Insufficient balance!', true);
-            
-            const requestData = {
-                user_id: auth.currentUser.uid,
-                username: currentUserData.username,
-                amount: amount,
-                payment_method: method,
-                phone_number: phone,
-                status: 'pending',
-                type: 'withdraw',
-                created_at: new Date().toISOString()
-            };
-            
-            await db.ref('payment_requests').push(requestData);
-            showToast('Withdrawal request submitted! Processing time: 1-24 hours.');
-            toggleModal('withdrawMoneyModal', false);
-            event.target.reset();
-        }
-
-        function logout() { auth.signOut(); }
-        function changePassword() { 
-            auth.sendPasswordResetEmail(auth.currentUser.email)
-                .then(() => showToast(`Password reset link sent to ${auth.currentUser.email}`))
-                .catch(err => showToast(err.message, true)); 
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('depositMoneyForm')?.addEventListener('submit', depositMoney);
-            document.getElementById('withdrawMoneyForm')?.addEventListener('submit', withdrawMoney);
-        });
-    </script>
 </body>
 </html>
