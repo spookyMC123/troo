@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -32,28 +32,51 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+        @keyframes bounce-in {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
 
         body { 
-            -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; overflow-x: hidden;
+            -webkit-user-select: none; user-select: none; 
+            -webkit-tap-highlight-color: transparent; 
+            overflow-x: hidden;
         }
         
-        .page { display: none; animation: slide-in 0.5s ease; } 
+        .page { 
+            display: none; 
+            animation: slide-in 0.5s ease; 
+        } 
         .page.active { display: block; }
         
         .card-hover {
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .card-hover:hover {
-            transform: translateY(-5px);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(20, 184, 166, 0.3);
+        }
+        .card-hover:active {
+            transform: translateY(-2px) scale(0.98);
         }
 
         .btn-animated {
             position: relative;
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .btn-animated:hover {
-            transform: scale(1.05);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        .btn-animated:active {
+            transform: translateY(0);
         }
         .btn-animated::before {
             content: '';
@@ -63,25 +86,31 @@
             width: 0;
             height: 0;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.3);
             transform: translate(-50%, -50%);
             transition: width 0.6s, height 0.6s;
         }
-        .btn-animated:hover::before {
+        .btn-animated:active::before {
             width: 300px;
             height: 300px;
         }
 
         .floating { animation: float 3s ease-in-out infinite; }
         .glow { animation: pulse-glow 2s ease-in-out infinite; }
+        .bounce-in { animation: bounce-in 0.6s ease; }
+        .fade-in { animation: fade-in 0.5s ease; }
 
         ::-webkit-scrollbar { width: 8px; } 
         ::-webkit-scrollbar-track { background: #1e293b; } 
-        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #06b6d4, #14b8a6); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { 
+            background: linear-gradient(180deg, #06b6d4, #14b8a6); 
+            border-radius: 10px; 
+        }
         
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; margin: 0; 
+            -webkit-appearance: none; 
+            margin: 0; 
         }
         input[type=number] { -moz-appearance: textfield; }
 
@@ -96,20 +125,25 @@
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(10px);
         }
-        .dark .bg-white { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(20, 184, 166, 0.2); }
+        .dark .bg-white { 
+            background: rgba(30, 41, 59, 0.8); 
+            border: 1px solid rgba(20, 184, 166, 0.2); 
+        }
         .dark .text-gray-800 { color: #e2e8f0; }
         .dark .text-gray-600 { color: #cbd5e1; }
         .dark .text-gray-500 { color: #94a3b8; }
         .dark .border { border-color: rgba(20, 184, 166, 0.2); }
-        .dark input, .dark select {
+        .dark input, .dark select, .dark textarea {
             background: rgba(30, 41, 59, 0.8) !important;
             border: 1px solid rgba(20, 184, 166, 0.3);
             color: #e2e8f0;
         }
-        .dark input::placeholder { color: #64748b; }
-        .dark input:focus, .dark select:focus {
+        .dark input::placeholder, .dark textarea::placeholder { color: #64748b; }
+        .dark input:focus, .dark select:focus, .dark textarea:focus {
             border-color: #14b8a6;
             box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+            transform: scale(1.02);
+            transition: all 0.3s ease;
         }
 
         .dark .bg-blue-50 { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); }
@@ -133,8 +167,8 @@
         .dark .text-purple-600 { color: #c084fc; }
 
         .dark #admin-bottom-nav { 
-            background: rgba(15, 23, 42, 0.95); 
-            backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.98); 
+            backdrop-filter: blur(20px);
             border-color: rgba(20, 184, 166, 0.2);
         }
 
@@ -146,26 +180,61 @@
             animation: gradient-shift 5s ease infinite; 
         }
 
-        .watermark {
-            position: fixed;
-            bottom: 70px;
-            right: 10px;
-            font-size: 10px;
-            opacity: 0.5;
-            color: #64748b;
-            z-index: 40;
-        }
-
         .stat-card {
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .stat-card:hover::before {
+            opacity: 1;
         }
         .stat-card:hover {
-            transform: translateY(-5px) scale(1.02);
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 15px 35px rgba(20, 184, 166, 0.4);
         }
 
-        .badge-pending { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
-        .badge-approved { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
-        .badge-rejected { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-pending { 
+            background: rgba(251, 191, 36, 0.2); 
+            color: #fbbf24; 
+            border: 1px solid rgba(251, 191, 36, 0.3); 
+        }
+        .badge-approved { 
+            background: rgba(34, 197, 94, 0.2); 
+            color: #22c55e; 
+            border: 1px solid rgba(34, 197, 94, 0.3); 
+        }
+        .badge-rejected { 
+            background: rgba(239, 68, 68, 0.2); 
+            color: #ef4444; 
+            border: 1px solid rgba(239, 68, 68, 0.3); 
+        }
+
+        .nav-item-active {
+            position: relative;
+        }
+        .nav-item-active::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: #14b8a6;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(20, 184, 166, 0.8);
+        }
     </style>
 </head>
 <body class="font-sans">
@@ -173,9 +242,9 @@
     <div id="admin-app-container" class="max-w-md mx-auto min-h-screen shadow-2xl">
 
         <div id="initial-loader" class="flex items-center justify-center h-screen">
-            <div class="text-center">
-                <i class="fas fa-spinner fa-spin fa-3x text-teal-500" style="animation: spin 1s linear infinite;"></i>
-                <p class="mt-4 text-gray-400 text-lg">Loading Admin Panel...</p>
+            <div class="text-center bounce-in">
+                <i class="fas fa-spinner fa-spin fa-3x text-teal-500 mb-4" style="animation: spin 1s linear infinite;"></i>
+                <p class="text-gray-400 text-lg">Loading Admin Panel...</p>
             </div>
         </div>
         
@@ -202,7 +271,7 @@
                 <a href="#" class="admin-nav-item text-center text-gray-400 transition-all" onclick="navigateTo('adminPaymentsPage')">
                     <div class="relative inline-block">
                         <i class="fas fa-money-bill-wave fa-lg"></i>
-                        <span id="payment-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold" style="display: none;"></span>
+                        <span id="payment-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold glow" style="display: none;"></span>
                     </div>
                     <span class="block text-xs mt-1">Payments</span>
                 </a>
@@ -216,11 +285,9 @@
                 </a>
             </div>
         </nav>
-
-        <div class="watermark">Dev by Joy</div>
     </div>
 
-    <div id="toast" class="fixed top-5 right-5 text-white py-3 px-5 rounded-lg shadow-2xl" style="display: none; z-index: 1000;"></div>
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 text-white py-3 px-6 rounded-lg shadow-2xl z-[1000] bounce-in" style="display: none;"></div>
 
     <script>
         document.addEventListener('contextmenu', event => event.preventDefault());
@@ -239,6 +306,7 @@
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             localStorage.setItem('theme', newTheme);
             applyTheme(newTheme);
+            showToast(`Switched to ${newTheme} mode`);
             if (document.getElementById('adminSettingsPage').classList.contains('active')) {
                 renderAdminSettingsPage(document.getElementById('adminSettingsPage'));
             }
@@ -251,14 +319,14 @@
         })();
 
         const firebaseConfig = {
-  apiKey: "AIzaSyB9ttTQxsCMHoNfYI9Spo0HUMNyTFD942Y",
-  authDomain: "nxtournament-47cd3.firebaseapp.com",
-  databaseURL: "https://nxtournament-47cd3-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "nxtournament-47cd3",
-  storageBucket: "nxtournament-47cd3.firebasestorage.app",
-  messagingSenderId: "843114254203",
-  appId: "1:843114254203:web:d9ffe6a0cbfe5c8f21b7de"
-};
+            apiKey: "AIzaSyB9ttTQxsCMHoNfYI9Spo0HUMNyTFD942Y",
+            authDomain: "nxtournament-47cd3.firebaseapp.com",
+            databaseURL: "https://nxtournament-47cd3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "nxtournament-47cd3",
+            storageBucket: "nxtournament-47cd3.firebasestorage.app",
+            messagingSenderId: "843114254203",
+            appId: "1:843114254203:web:d9ffe6a0cbfe5c8f21b7de"
+        };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
@@ -266,7 +334,6 @@
         let currentAdminData = null;
         let currentTournamentId = null;
 
-        // Check for pending payments badge
         function updatePaymentBadge() {
             db.ref('payment_requests').orderByChild('status').equalTo('pending').once('value', snap => {
                 const badge = document.getElementById('payment-badge');
@@ -296,10 +363,15 @@
             
             document.querySelectorAll('.admin-nav-item').forEach(item => {
                 const isActive = item.getAttribute('onclick').includes(pageId);
-                item.classList.toggle('text-teal-400', isActive);
-                item.classList.toggle('text-gray-400', !isActive);
+                if (isActive) {
+                    item.classList.add('text-teal-400', 'nav-item-active');
+                    item.classList.remove('text-gray-400');
+                } else {
+                    item.classList.remove('text-teal-400', 'nav-item-active');
+                    item.classList.add('text-gray-400');
+                }
             });
-            window.scrollTo(0, 0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             
             if (auth.currentUser) updatePaymentBadge();
         }
@@ -307,9 +379,16 @@
         function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
-            toast.className = `fixed top-5 right-5 text-white py-3 px-5 rounded-lg shadow-2xl ${isError ? 'bg-gradient-to-r from-red-500 to-orange-500' : 'bg-gradient-to-r from-green-500 to-teal-500'}`;
+            toast.className = `fixed top-5 left-1/2 transform -translate-x-1/2 text-white py-3 px-6 rounded-lg shadow-2xl z-[1000] bounce-in ${isError ? 'bg-gradient-to-r from-red-500 to-orange-500' : 'bg-gradient-to-r from-green-500 to-teal-500'}`;
             toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+            setTimeout(() => { 
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.style.opacity = '1';
+                }, 300);
+            }, 3000);
         }
 
         function formatCurrency(amount) {
@@ -323,7 +402,6 @@
                     currentAdminData = { uid: user.uid, email: user.email, ...userData };
                     navigateTo('adminDashboardPage');
                     updatePaymentBadge();
-                    // Listen for payment requests changes
                     db.ref('payment_requests').on('value', updatePaymentBadge);
                 } else {
                     showToast('Access denied. Admin privileges required.', true);
@@ -354,24 +432,34 @@
             container.innerHTML = `
                 <div class="p-6 h-screen flex flex-col justify-center">
                     <div class="text-center mb-8 floating">
-                        <div class="w-32 h-32 mx-auto rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 flex items-center justify-center text-6xl glow">
+                        <div class="w-32 h-32 mx-auto rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 flex items-center justify-center text-6xl glow shadow-2xl">
                             <i class="fas fa-shield-alt text-white"></i>
                         </div>
                     </div>
                     <h1 class="text-5xl font-bold text-center mb-2 text-gradient">NX Admin Panel</h1>
-                    <p class="text-center text-gray-400 mb-8">Tournament Management System</p>
+                    <p class="text-center text-gray-400 mb-8 text-lg">Tournament Management System</p>
                     
-                    <div class="bg-white p-6 rounded-2xl shadow-2xl border">
+                    <div class="bg-white p-6 rounded-2xl shadow-2xl border fade-in">
                         <form id="adminLoginForm" class="space-y-4">
-                            <input type="email" id="adminLoginEmail" placeholder="Admin Email" class="w-full p-3 rounded-lg" required>
-                            <input type="password" id="adminLoginPassword" placeholder="Password" class="w-full p-3 rounded-lg" required>
-                            <button type="submit" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">
-                                <i class="fas fa-sign-in-alt mr-2"></i>Login
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-2">
+                                    <i class="fas fa-envelope mr-2 text-teal-500"></i>Admin Email
+                                </label>
+                                <input type="email" id="adminLoginEmail" placeholder="Enter admin email" class="w-full p-3 rounded-lg" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-2">
+                                    <i class="fas fa-lock mr-2 text-teal-500"></i>Password
+                                </label>
+                                <input type="password" id="adminLoginPassword" placeholder="Enter password" class="w-full p-3 rounded-lg" required>
+                            </div>
+                            <button type="submit" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-4 rounded-lg font-bold text-lg btn-animated shadow-xl">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Login to Admin Panel
                             </button>
                         </form>
                     </div>
 
-                    <div class="mt-6 bg-gradient-to-r from-cyan-900/20 to-teal-900/20 border border-cyan-500/30 p-4 rounded-xl">
+                    <div class="mt-6 bg-gradient-to-r from-cyan-900/20 to-teal-900/20 border border-cyan-500/30 p-4 rounded-xl fade-in">
                         <p class="text-center text-sm text-gray-300 mb-2"><i class="fas fa-info-circle mr-2 text-cyan-400"></i>Default Admin Credentials:</p>
                         <p class="text-center font-mono text-cyan-300">Email: joy@nx.com</p>
                         <p class="text-center font-mono text-cyan-300">Password: admin123</p>
@@ -380,70 +468,91 @@
 
             document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
                 e.preventDefault();
-                auth.signInWithEmailAndPassword(e.target.adminLoginEmail.value, e.target.adminLoginPassword.value).catch(err => showToast(err.message, true));
+                const btn = e.target.querySelector('button[type="submit"]');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Authenticating...';
+                btn.disabled = true;
+                auth.signInWithEmailAndPassword(e.target.adminLoginEmail.value, e.target.adminLoginPassword.value)
+                    .catch(err => {
+                        showToast(err.message, true);
+                        btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Login to Admin Panel';
+                        btn.disabled = false;
+                    });
             });
         }
 
         async function renderAdminDashboardPage(container) {
             container.innerHTML = `
-                <div class="p-4 space-y-6 min-h-screen">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-3xl font-bold text-gradient">Admin Dashboard</h2>
+                <div class="p-4 space-y-6 min-h-screen fade-in">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h2 class="text-3xl font-bold text-gradient">Admin Dashboard</h2>
+                            <p class="text-sm text-gray-400 mt-1">Welcome back, ${currentAdminData?.username || 'Admin'}!</p>
+                        </div>
                         <button onclick="logout()" class="text-sm text-white bg-gradient-to-r from-red-500 to-orange-500 px-4 py-2 rounded-full font-semibold btn-animated">
                             <i class="fas fa-sign-out-alt mr-1"></i>Logout
                         </button>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-blue-50 border p-4 rounded-2xl shadow-lg stat-card glow">
+                        <div class="bg-blue-50 border p-5 rounded-2xl shadow-lg stat-card glow">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-3xl font-bold text-blue-600" id="total-users">...</p>
-                                    <p class="text-sm text-blue-800 mt-1">Total Users</p>
+                                    <p class="text-4xl font-bold text-blue-600 mb-1" id="total-users">...</p>
+                                    <p class="text-sm text-blue-800">Total Users</p>
                                 </div>
-                                <i class="fas fa-users text-4xl text-blue-300"></i>
+                                <div class="text-5xl text-blue-300 opacity-50">
+                                    <i class="fas fa-users"></i>
+                                </div>
                             </div>
                         </div>
-                        <div class="bg-teal-50 border p-4 rounded-2xl shadow-lg stat-card glow">
+                        <div class="bg-teal-50 border p-5 rounded-2xl shadow-lg stat-card glow">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-3xl font-bold text-teal-600" id="total-tournaments">...</p>
-                                    <p class="text-sm text-teal-800 mt-1">Tournaments</p>
+                                    <p class="text-4xl font-bold text-teal-600 mb-1" id="total-tournaments">...</p>
+                                    <p class="text-sm text-teal-800">Tournaments</p>
                                 </div>
-                                <i class="fas fa-trophy text-4xl text-teal-300"></i>
+                                <div class="text-5xl text-teal-300 opacity-50">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
                             </div>
                         </div>
-                        <div class="bg-green-50 border p-4 rounded-2xl shadow-lg stat-card glow">
+                        <div class="bg-green-50 border p-5 rounded-2xl shadow-lg stat-card glow">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-xl font-bold text-green-600" id="total-prize">...</p>
-                                    <p class="text-sm text-green-800 mt-1">Prize Won</p>
+                                    <p class="text-xl font-bold text-green-600 mb-1" id="total-prize">...</p>
+                                    <p class="text-sm text-green-800">Prize Won</p>
                                 </div>
-                                <i class="fas fa-gift text-4xl text-green-300"></i>
+                                <div class="text-5xl text-green-300 opacity-50">
+                                    <i class="fas fa-gift"></i>
+                                </div>
                             </div>
                         </div>
-                        <div class="bg-orange-50 border p-4 rounded-2xl shadow-lg stat-card glow">
+                        <div class="bg-orange-50 border p-5 rounded-2xl shadow-lg stat-card glow">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-xl font-bold text-orange-600" id="total-revenue">...</p>
-                                    <p class="text-sm text-orange-800 mt-1">Revenue</p>
+                                    <p class="text-xl font-bold text-orange-600 mb-1" id="total-revenue">...</p>
+                                    <p class="text-sm text-orange-800">Revenue</p>
                                 </div>
-                                <i class="fas fa-chart-line text-4xl text-orange-300"></i>
+                                <div class="text-5xl text-orange-300 opacity-50">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-purple-50 border p-4 rounded-2xl shadow-lg stat-card cursor-pointer" onclick="navigateTo('adminPaymentsPage')">
+                    <div class="bg-purple-50 border p-5 rounded-2xl shadow-lg stat-card cursor-pointer" onclick="navigateTo('adminPaymentsPage')">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-3xl font-bold text-purple-600" id="pending-payments">...</p>
-                                <p class="text-sm text-purple-800 mt-1">Pending Requests</p>
+                                <p class="text-4xl font-bold text-purple-600 mb-1" id="pending-payments">...</p>
+                                <p class="text-sm text-purple-800">Pending Payment Requests</p>
                             </div>
-                            <i class="fas fa-clock text-4xl text-purple-300"></i>
+                            <div class="text-5xl text-purple-300 opacity-50">
+                                <i class="fas fa-clock"></i>
+                            </div>
                         </div>
                     </div>
                     
-                    <button onclick="navigateTo('adminTournamentPage')" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-4 rounded-2xl font-bold text-lg shadow-2xl btn-animated">
+                    <button onclick="navigateTo('adminTournamentPage')" class="w-full text-white bg-gradient-to-r from-cyan-500 via-teal-500 to-green-500 p-5 rounded-2xl font-bold text-xl shadow-2xl btn-animated">
                         <i class="fas fa-plus-circle mr-2"></i>Create New Tournament
                     </button>
                 </div>`;
@@ -458,7 +567,8 @@
             Object.values(tournaments).forEach(t => {
                 if (t.status === 'Completed' && t.winner_id) {
                     totalPrize += t.prize_pool;
-                    totalRevenue += (t.entry_fee * (t.commission_percentage / 100)) * (Object.keys(t.participants || {}).length);
+                    const participantCount = Object.keys((t.participants || {})).length;
+                    totalRevenue += (t.entry_fee * participantCount * (t.commission_percentage / 100));
                 }
             });
             document.getElementById('total-prize').textContent = formatCurrency(totalPrize);
@@ -470,36 +580,60 @@
 
         async function renderAdminTournamentPage(container) {
             container.innerHTML = `
-                <div class="p-4 space-y-6 min-h-screen">
+                <div class="p-4 space-y-6 min-h-screen fade-in">
                     <div class="bg-white p-6 rounded-2xl shadow-2xl border">
                         <h2 class="text-2xl font-bold mb-4 text-gradient flex items-center">
-                            <i class="fas fa-trophy mr-2"></i>Create Tournament
+                            <i class="fas fa-trophy mr-3"></i>Create Tournament
                         </h2>
                         <form id="createTournamentForm" class="space-y-4">
-                            <input type="text" id="t-title" placeholder="Tournament Title" class="w-full p-3 rounded-lg" required>
-                            <input type="text" id="t-game-name" placeholder="Game Name (e.g., FPS Arena)" class="w-full p-3 rounded-lg" required>
-                            <select id="t-game-type" class="w-full p-3 rounded-lg" required>
-                                <option value="">Select Game Type</option>
-                                <option value="fps_game">FPS Game</option>
-                                <option value="quiz">Quiz</option>
-                                <option value="rock_paper_scissors">Rock Paper Scissors</option>
-                            </select>
-                            <div class="grid grid-cols-2 gap-4">
-                                <input type="number" id="t-fee" placeholder="Entry Fee (৳)" class="w-full p-3 rounded-lg" required>
-                                <input type="number" id="t-prize" placeholder="Prize Pool (৳)" class="w-full p-3 rounded-lg" required>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-2"><i class="fas fa-heading mr-2 text-teal-500"></i>Tournament Title</label>
+                                <input type="text" id="t-title" placeholder="e.g., NX Championship 2024" class="w-full p-3 rounded-lg" required>
                             </div>
-                            <input type="datetime-local" id="t-time" class="w-full p-3 rounded-lg" required>
-                            <input type="number" id="t-commission" placeholder="Commission %" class="w-full p-3 rounded-lg" required>
-                            <button type="submit" class="w-full text-white bg-gradient-to-r from-green-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-2"><i class="fas fa-gamepad mr-2 text-cyan-500"></i>Game Name</label>
+                                <input type="text" id="t-game-name" placeholder="e.g., Free Fire, PUBG" class="w-full p-3 rounded-lg" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-2"><i class="fas fa-list mr-2 text-blue-500"></i>Game Type</label>
+                                <select id="t-game-type" class="w-full p-3 rounded-lg" required>
+                                    <option value="">Select Game Type</option>
+                                    <option value="fps_game">FPS Game</option>
+                                    <option value="quiz">Quiz</option>
+                                    <option value="rock_paper_scissors">Rock Paper Scissors</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-2"><i class="fas fa-coins mr-2 text-yellow-500"></i>Entry Fee</label>
+                                    <input type="number" id="t-fee" placeholder="৳50" class="w-full p-3 rounded-lg" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-2"><i class="fas fa-gift mr-2 text-green-500"></i>Prize Pool</label>
+                                    <input type="number" id="t-prize" placeholder="৳1000" class="w-full p-3 rounded-lg" required>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-2"><i class="fas fa-clock mr-2 text-orange-500"></i>Match Time</label>
+                                <input type="datetime-local" id="t-time" class="w-full p-3 rounded-lg" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-2"><i class="fas fa-percent mr-2 text-purple-500"></i>Commission Percentage</label>
+                                <input type="number" id="t-commission" placeholder="10" class="w-full p-3 rounded-lg" required>
+                            </div>
+                            <button type="submit" class="w-full text-white bg-gradient-to-r from-green-500 to-teal-500 p-4 rounded-lg font-bold text-lg btn-animated shadow-xl">
                                 <i class="fas fa-check-circle mr-2"></i>Create Tournament
                             </button>
                         </form>
                     </div>
                     
-                    <h2 class="text-2xl font-bold mt-8 text-gradient">All Tournaments</h2>
+                    <h2 class="text-2xl font-bold text-gradient flex items-center">
+                        <i class="fas fa-list mr-3"></i>All Tournaments
+                    </h2>
                     <div id="all-tournaments-list" class="space-y-3">
-                        <div class="text-center py-4">
+                        <div class="text-center py-8">
                             <i class="fas fa-spinner fa-spin fa-2x text-teal-500"></i>
+                            <p class="text-gray-400 mt-3">Loading tournaments...</p>
                         </div>
                     </div>
                 </div>`;
@@ -508,26 +642,41 @@
             const listEl = document.getElementById('all-tournaments-list');
             const tournaments = (await db.ref('tournaments').once('value')).val();
             if(!tournaments) { 
-                listEl.innerHTML = `<p class="text-center text-gray-400 py-4">No tournaments created yet.</p>`; 
+                listEl.innerHTML = `
+                    <div class="text-center py-12 bounce-in">
+                        <i class="fas fa-trophy text-6xl text-gray-700 mb-4"></i>
+                        <p class="text-gray-400">No tournaments created yet.</p>
+                    </div>`; 
                 return; 
             }
             
             listEl.innerHTML = Object.entries(tournaments).map(([id, t]) => `
-                <div class="bg-teal-50 border p-4 rounded-xl shadow-lg flex items-center justify-between card-hover">
-                    <div>
-                        <p class="font-bold text-teal-800 text-lg">${t.title} 
-                            <span class="text-xs font-semibold ${
-                                t.status === 'Live' ? 'text-red-500' : 
-                                t.status === 'Completed' ? 'text-green-600' : 'text-yellow-600'
-                            }">(${t.status})</span>
-                        </p>
-                        <p class="text-sm text-gray-600"><i class="fas fa-gamepad mr-1"></i>${t.game_name}</p>
+                <div class="bg-teal-50 border p-4 rounded-xl shadow-lg card-hover">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex-1">
+                            <p class="font-bold text-teal-800 text-lg">${t.title}</p>
+                            <p class="text-sm text-gray-600"><i class="fas fa-gamepad mr-1"></i>${t.game_name}</p>
+                        </div>
+                        <span class="text-xs font-bold px-3 py-1 rounded-full ${
+                            t.status === 'Live' ? 'bg-red-500 text-white animate-pulse' : 
+                            t.status === 'Completed' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'
+                        }">${t.status}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mb-3 text-sm">
+                        <div class="bg-white/50 p-2 rounded-lg">
+                            <p class="text-gray-600">Entry Fee</p>
+                            <p class="font-bold text-yellow-600">${formatCurrency(t.entry_fee)}</p>
+                        </div>
+                        <div class="bg-white/50 p-2 rounded-lg">
+                            <p class="text-gray-600">Prize Pool</p>
+                            <p class="font-bold text-green-600">${formatCurrency(t.prize_pool)}</p>
+                        </div>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="navigateTo('adminManageTournamentPage', {tournamentId: '${id}'})" class="bg-gradient-to-r from-cyan-500 to-teal-500 text-white px-4 py-2 rounded-lg text-sm font-semibold btn-animated">
+                        <button onclick="navigateTo('adminManageTournamentPage', {tournamentId: '${id}'})" class="flex-1 bg-gradient-to-r from-cyan-500 to-teal-500 text-white px-4 py-3 rounded-lg text-sm font-semibold btn-animated">
                             <i class="fas fa-cog mr-1"></i>Manage
                         </button>
-                        <button onclick="deleteTournament('${id}')" class="bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-lg text-sm btn-animated">
+                        <button onclick="deleteTournament('${id}')" class="bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-3 rounded-lg text-sm btn-animated">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -536,14 +685,19 @@
 
         async function renderAdminManageTournamentPage(container) {
             if (!currentTournamentId) { 
-                container.innerHTML = `<p class="text-center p-8 text-red-400">Error: No tournament selected.</p>`; 
+                container.innerHTML = `
+                    <div class="text-center p-8">
+                        <i class="fas fa-exclamation-circle text-6xl text-red-400 mb-4"></i>
+                        <p class="text-red-400 text-xl">Error: No tournament selected.</p>
+                    </div>`; 
                 return; 
             }
             
             container.innerHTML = `
-                <div class="p-4 space-y-6 min-h-screen" id="manage-tournament-content">
-                    <div class="text-center">
+                <div class="p-4 space-y-6 min-h-screen fade-in" id="manage-tournament-content">
+                    <div class="text-center py-12">
                         <i class="fas fa-spinner fa-spin fa-3x text-teal-500"></i>
+                        <p class="text-gray-400 mt-3">Loading tournament details...</p>
                     </div>
                 </div>`;
             
@@ -556,28 +710,35 @@
             for (const pId in participants) {
                 const user = (await db.ref(`users/${pId}`).once('value')).val();
                 if(user) {
-                    participantOptions += `<option value="${pId}">${user.username}</option>`;
+                    participantOptions += `<option value="${pId}">${user.username} (${participants[pId].game_name})</option>`;
                     
                     const pData = participants[pId];
-                    let gameResultText = pData.gameResult || 'Not Played';
-                    if (tournament.game_type === 'fps_game' && pData.score !== undefined) {
-                        gameResultText = `Score: ${pData.score}, Health: ${pData.health}`;
-                    }
-
                     participantListHtml += `
-                        <li class="bg-gradient-to-r from-gray-700/30 to-gray-800/30 p-3 rounded-lg flex justify-between border border-gray-600">
-                            <span class="text-white">${user.username}</span>
-                            <span class="font-bold text-teal-400">${gameResultText}</span>
+                        <li class="bg-gradient-to-r from-gray-700/30 to-gray-800/30 p-4 rounded-lg border border-gray-600 card-hover">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-white font-bold text-lg">${user.username}</span>
+                                <span class="text-xs ${pData.status === 'Winner' ? 'bg-yellow-500 text-white' : 'bg-teal-500/20 text-teal-300'} px-3 py-1 rounded-full font-bold">
+                                    ${pData.status === 'Winner' ? '👑 Winner' : pData.status || 'Active'}
+                                </span>
+                            </div>
+                            <div class="text-sm text-gray-400 space-y-1">
+                                <p><i class="fas fa-user mr-2 text-teal-400"></i>Game Name: <span class="text-teal-300">${pData.game_name}</span></p>
+                                <p><i class="fas fa-id-card mr-2 text-cyan-400"></i>Game UID: <span class="text-cyan-300">${pData.game_uid}</span></p>
+                                <p class="text-xs text-gray-500"><i class="far fa-clock mr-1"></i>Joined: ${new Date(pData.joined_at).toLocaleString()}</p>
+                            </div>
                         </li>`;
                 }
             }
             
             contentEl.innerHTML = `
                 <div class="flex items-center gap-4 mb-4">
-                    <button onclick="navigateTo('adminTournamentPage')" class="text-gray-400 hover:text-teal-400 transition-all">
+                    <button onclick="navigateTo('adminTournamentPage')" class="text-gray-400 hover:text-teal-400 transition-all btn-animated">
                         <i class="fas fa-arrow-left fa-2x"></i>
                     </button>
-                    <h2 class="text-2xl font-bold text-gradient">${tournament.title}</h2>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gradient">${tournament.title}</h2>
+                        <p class="text-sm text-gray-400">${tournament.game_name}</p>
+                    </div>
                 </div>
                 
                 <div class="bg-white border p-6 rounded-2xl shadow-2xl space-y-4">
@@ -585,15 +746,24 @@
                         <i class="fas fa-door-open mr-2"></i>Room Details & Status
                     </h3>
                     <form id="roomDetailsForm" class="space-y-3">
-                        <input type="text" id="t-roomid" placeholder="Room ID" value="${tournament.room_id || ''}" class="w-full p-3 rounded-lg">
-                        <input type="text" id="t-roompass" placeholder="Room Password" value="${tournament.room_password || ''}" class="w-full p-3 rounded-lg">
-                        <select id="t-status" class="w-full p-3 rounded-lg">
-                            <option value="Upcoming" ${tournament.status === 'Upcoming' && 'selected'}>Upcoming</option>
-                            <option value="Live" ${tournament.status === 'Live' && 'selected'}>Live</option>
-                            <option value="Completed" ${tournament.status === 'Completed' && 'selected'}>Completed</option>
-                        </select>
-                        <button type="submit" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">
-                            <i class="fas fa-save mr-2"></i>Update Details
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-2"><i class="fas fa-hashtag mr-2 text-teal-500"></i>Room ID</label>
+                            <input type="text" id="t-roomid" placeholder="Enter Room ID" value="${tournament.room_id || ''}" class="w-full p-3 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-2"><i class="fas fa-key mr-2 text-cyan-500"></i>Room Password</label>
+                            <input type="text" id="t-roompass" placeholder="Enter Room Password" value="${tournament.room_password || ''}" class="w-full p-3 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-2"><i class="fas fa-signal mr-2 text-blue-500"></i>Tournament Status</label>
+                            <select id="t-status" class="w-full p-3 rounded-lg">
+                                <option value="Upcoming" ${tournament.status === 'Upcoming' && 'selected'}>Upcoming</option>
+                                <option value="Live" ${tournament.status === 'Live' && 'selected'}>Live</option>
+                                <option value="Completed" ${tournament.status === 'Completed' && 'selected'}>Completed</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-4 rounded-lg font-bold btn-animated shadow-xl">
+                            <i class="fas fa-save mr-2"></i>Update Tournament Details
                         </button>
                     </form>
                 </div>
@@ -603,27 +773,33 @@
                         <i class="fas fa-crown mr-2"></i>Declare Winner
                     </h3>
                     <form id="winnerForm" class="space-y-3">
-                        <select id="winner-select" class="w-full p-3 rounded-lg">
-                            <option value="">Select a winner...</option>
-                            ${participantOptions}
-                        </select>
-                        <button type="submit" class="w-full text-white bg-gradient-to-r from-green-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">
-                            <i class="fas fa-trophy mr-2"></i>Declare & Distribute Prize
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-2"><i class="fas fa-trophy mr-2 text-yellow-500"></i>Select Winner</label>
+                            <select id="winner-select" class="w-full p-3 rounded-lg">
+                                <option value="">Choose the winner...</option>
+                                ${participantOptions}
+                            </select>
+                        </div>
+                        <div class="bg-gradient-to-r from-yellow-900/30 to-orange-900/30 border border-yellow-500/30 p-3 rounded-lg">
+                            <p class="text-sm text-yellow-300"><i class="fas fa-info-circle mr-2"></i>Prize pool of ${formatCurrency(tournament.prize_pool)} will be distributed to winner's wallet immediately.</p>
+                        </div>
+                        <button type="submit" class="w-full text-white bg-gradient-to-r from-green-500 to-teal-500 p-4 rounded-lg font-bold btn-animated shadow-xl">
+                            <i class="fas fa-trophy mr-2"></i>Declare Winner & Distribute Prize
                         </button>
                     </form>
                 </div>
                 
                 ${tournament.status === 'Completed' ? `
-                    <div class="bg-green-50 border border-green-300 text-green-800 p-4 rounded-xl text-center font-semibold">
-                        <i class="fas fa-check-circle mr-2"></i>This tournament is completed.
+                    <div class="bg-green-50 border-2 border-green-500 text-green-800 p-5 rounded-xl text-center font-bold shadow-lg glow">
+                        <i class="fas fa-check-circle text-3xl mr-2"></i>Tournament Completed Successfully!
                     </div>` : ''}
                 
                 <div class="bg-white border p-6 rounded-2xl shadow-2xl">
                     <h3 class="font-bold text-xl mb-4 flex items-center text-gradient">
                         <i class="fas fa-users mr-2"></i>Participants (${Object.keys(participants).length})
                     </h3>
-                    <ul class="space-y-2 max-h-60 overflow-y-auto">
-                        ${participantListHtml || '<li class="text-gray-400 text-center py-4">No participants yet.</li>'}
+                    <ul class="space-y-3 max-h-96 overflow-y-auto">
+                        ${participantListHtml || '<li class="text-gray-400 text-center py-8"><i class="fas fa-user-slash text-4xl mb-3 block"></i>No participants yet.</li>'}
                     </ul>
                 </div>`;
             
@@ -633,11 +809,14 @@
 
         async function renderAdminUsersPage(container) {
             container.innerHTML = `
-                <div class="p-4 min-h-screen">
-                    <h2 class="text-3xl font-bold mb-6 text-gradient">User Management</h2>
+                <div class="p-4 min-h-screen fade-in">
+                    <h2 class="text-3xl font-bold mb-6 text-gradient flex items-center">
+                        <i class="fas fa-users-cog mr-3"></i>User Management
+                    </h2>
                     <div id="users-list" class="space-y-3">
-                        <div class="text-center py-4">
+                        <div class="text-center py-8">
                             <i class="fas fa-spinner fa-spin fa-2x text-teal-500"></i>
+                            <p class="text-gray-400 mt-3">Loading users...</p>
                         </div>
                     </div>
                 </div>`;
@@ -647,32 +826,42 @@
             const listEl = document.getElementById('users-list');
             
             if (!users) {
-                listEl.innerHTML = `<p class="text-center text-gray-400 py-4">No users found.</p>`;
+                listEl.innerHTML = `
+                    <div class="text-center py-12 bounce-in">
+                        <i class="fas fa-user-slash text-6xl text-gray-700 mb-4"></i>
+                        <p class="text-gray-400">No users found.</p>
+                    </div>`;
                 return;
             }
             
             listEl.innerHTML = Object.entries(users).map(([uid, u]) => `
-                <div class="bg-blue-50 border p-4 rounded-xl shadow-lg card-hover">
-                    <div class="flex justify-between items-start mb-3">
+                <div class="bg-blue-50 border p-5 rounded-xl shadow-lg card-hover">
+                    <div class="flex justify-between items-start mb-4">
                         <div>
-                            <p class="font-bold text-blue-800 text-lg">${u.username} ${u.role === 'admin' ? '<span class="text-xs bg-yellow-500 text-white px-2 py-1 rounded-full ml-2"><i class="fas fa-crown mr-1"></i>Admin</span>' : ''}</p>
-                            <p class="text-sm text-gray-600">${u.email}</p>
+                            <p class="font-bold text-blue-800 text-xl flex items-center">
+                                ${u.username} 
+                                ${u.role === 'admin' ? '<span class="text-xs bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-1 rounded-full ml-2 shadow-lg glow"><i class="fas fa-crown mr-1"></i>Admin</span>' : ''}
+                            </p>
+                            <p class="text-sm text-gray-600 mt-1"><i class="fas fa-envelope mr-2"></i>${u.email}</p>
                         </div>
-                        <span class="text-xl font-bold text-green-600">${formatCurrency(u.wallet_balance || 0)}</span>
+                        <div class="text-right">
+                            <p class="text-xs text-gray-500 mb-1">Balance</p>
+                            <span class="text-2xl font-bold text-green-600">${formatCurrency(u.wallet_balance || 0)}</span>
+                        </div>
                     </div>
                     <div class="grid grid-cols-2 gap-2 mb-2">
-                        <button onclick="addMoneyToUser('${uid}', '${u.username}')" class="text-white bg-gradient-to-r from-green-500 to-teal-500 px-4 py-2 rounded-lg text-sm font-semibold btn-animated">
+                        <button onclick="addMoneyToUser('${uid}', '${u.username}')" class="text-white bg-gradient-to-r from-green-500 to-teal-500 px-4 py-3 rounded-lg text-sm font-semibold btn-animated">
                             <i class="fas fa-plus-circle mr-1"></i>Add Money
                         </button>
-                        <button onclick="deductMoneyFromUser('${uid}', '${u.username}')" class="text-white bg-gradient-to-r from-orange-500 to-red-500 px-4 py-2 rounded-lg text-sm font-semibold btn-animated">
+                        <button onclick="deductMoneyFromUser('${uid}', '${u.username}')" class="text-white bg-gradient-to-r from-orange-500 to-red-500 px-4 py-3 rounded-lg text-sm font-semibold btn-animated">
                             <i class="fas fa-minus-circle mr-1"></i>Deduct
                         </button>
                     </div>
                     ${u.role !== 'admin' ? `
-                    <button onclick="makeAdmin('${uid}', '${u.username}')" class="w-full text-white bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 rounded-lg text-sm font-semibold btn-animated">
+                    <button onclick="makeAdmin('${uid}', '${u.username}')" class="w-full text-white bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-3 rounded-lg text-sm font-semibold btn-animated">
                         <i class="fas fa-crown mr-1"></i>Make Admin
                     </button>` : `
-                    <button onclick="removeAdmin('${uid}', '${u.username}')" class="w-full text-white bg-gradient-to-r from-gray-600 to-gray-700 px-4 py-2 rounded-lg text-sm font-semibold btn-animated">
+                    <button onclick="removeAdmin('${uid}', '${u.username}')" class="w-full text-white bg-gradient-to-r from-gray-600 to-gray-700 px-4 py-3 rounded-lg text-sm font-semibold btn-animated">
                         <i class="fas fa-user mr-1"></i>Remove Admin
                     </button>`}
                 </div>`).join('');
@@ -680,11 +869,17 @@
 
         async function renderAdminPaymentsPage(container) {
             container.innerHTML = `
-                <div class="p-4 min-h-screen">
-                    <h2 class="text-3xl font-bold mb-6 text-gradient">Payment Requests</h2>
-                    <div class="flex border-b border-teal-500/30 mb-4">
-                        <button id="pendingTab" class="flex-1 py-3 text-center font-semibold border-b-2 border-teal-500 text-teal-400 transition-all">Pending</button>
-                        <button id="historyTab" class="flex-1 py-3 text-center font-semibold border-b-2 border-transparent text-gray-400 transition-all">History</button>
+                <div class="p-4 min-h-screen fade-in">
+                    <h2 class="text-3xl font-bold mb-6 text-gradient flex items-center">
+                        <i class="fas fa-money-bill-wave mr-3"></i>Payment Requests
+                    </h2>
+                    <div class="flex border-b border-teal-500/30 mb-6 bg-white/50 rounded-t-xl">
+                        <button id="pendingTab" class="flex-1 py-4 text-center font-bold border-b-2 border-teal-500 text-teal-400 transition-all">
+                            <i class="fas fa-clock mr-2"></i>Pending
+                        </button>
+                        <button id="historyTab" class="flex-1 py-4 text-center font-bold border-b-2 border-transparent text-gray-400 transition-all">
+                            <i class="fas fa-history mr-2"></i>History
+                        </button>
                     </div>
                     <div id="pendingContent" class="space-y-3"></div>
                     <div id="historyContent" class="space-y-3" style="display:none;"></div>
@@ -697,30 +892,52 @@
             
             const pendingEl = document.getElementById('pendingContent');
             if (Object.keys(pending).length === 0) {
-                pendingEl.innerHTML = `<p class="text-center py-8 text-gray-400">No pending requests.</p>`;
+                pendingEl.innerHTML = `
+                    <div class="text-center py-12 bounce-in">
+                        <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+                        <p class="text-gray-400">No pending payment requests.</p>
+                        <p class="text-sm text-gray-500 mt-2">All caught up!</p>
+                    </div>`;
             } else {
                 pendingEl.innerHTML = await Promise.all(Object.entries(pending).map(async ([id, req]) => {
                     return `
-                        <div class="bg-white border p-4 rounded-xl shadow-lg card-hover">
-                            <div class="flex justify-between items-start mb-3">
+                        <div class="bg-white border p-5 rounded-xl shadow-lg card-hover">
+                            <div class="flex justify-between items-start mb-4">
                                 <div>
-                                    <p class="font-bold text-lg">${req.username}</p>
-                                    <p class="text-sm text-gray-600">${req.type === 'deposit' ? '<i class="fas fa-arrow-down text-green-500 mr-1"></i>Deposit' : '<i class="fas fa-arrow-up text-orange-500 mr-1"></i>Withdrawal'}</p>
+                                    <p class="font-bold text-xl">${req.username}</p>
+                                    <p class="text-sm text-gray-600 mt-1">${req.type === 'deposit' ? '<i class="fas fa-arrow-down text-green-500 mr-1"></i><span class="text-green-600">Deposit Request</span>' : '<i class="fas fa-arrow-up text-orange-500 mr-1"></i><span class="text-orange-600">Withdrawal Request</span>'}</p>
                                 </div>
-                                <span class="text-2xl font-bold text-teal-600">${formatCurrency(req.amount)}</span>
+                                <div class="text-right">
+                                    <p class="text-xs text-gray-500 mb-1">Amount</p>
+                                    <span class="text-3xl font-bold text-teal-600">${formatCurrency(req.amount)}</span>
+                                </div>
                             </div>
-                            <div class="bg-gray-100 border border-gray-300 p-3 rounded-lg mb-3 text-sm">
-                                <p class="text-gray-700"><i class="fas fa-mobile-alt mr-2 text-blue-500"></i><strong>Method:</strong> ${req.payment_method.toUpperCase()}</p>
-                                <p class="text-gray-700"><i class="fas fa-phone mr-2 text-green-500"></i><strong>Phone:</strong> ${req.phone_number}</p>
-                                ${req.transaction_id ? `<p class="text-gray-700"><i class="fas fa-receipt mr-2 text-purple-500"></i><strong>Trx ID:</strong> ${req.transaction_id}</p>` : ''}
-                                <p class="text-xs text-gray-500 mt-2"><i class="far fa-clock mr-1"></i>${new Date(req.created_at).toLocaleString()}</p>
+                            <div class="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-300 p-4 rounded-lg mb-4 space-y-2 text-sm">
+                                <p class="text-gray-700 flex items-center">
+                                    <i class="fas fa-mobile-alt mr-2 text-blue-500 w-5"></i>
+                                    <strong class="w-20">Method:</strong> 
+                                    <span class="text-blue-600 font-semibold">${req.payment_method.toUpperCase()}</span>
+                                </p>
+                                <p class="text-gray-700 flex items-center">
+                                    <i class="fas fa-phone mr-2 text-green-500 w-5"></i>
+                                    <strong class="w-20">Phone:</strong> 
+                                    <span class="font-mono text-green-600">${req.phone_number}</span>
+                                </p>
+                                ${req.transaction_id ? `<p class="text-gray-700 flex items-center">
+                                    <i class="fas fa-receipt mr-2 text-purple-500 w-5"></i>
+                                    <strong class="w-20">Trx ID:</strong> 
+                                    <span class="font-mono text-purple-600">${req.transaction_id}</span>
+                                </p>` : ''}
+                                <p class="text-xs text-gray-500 mt-3 pt-2 border-t">
+                                    <i class="far fa-clock mr-1"></i>${new Date(req.created_at).toLocaleString()}
+                                </p>
                             </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <button onclick="approvePayment('${id}', '${req.type}', '${req.user_id}', ${req.amount})" class="text-white bg-gradient-to-r from-green-500 to-teal-500 p-3 rounded-lg font-semibold btn-animated">
-                                    <i class="fas fa-check mr-1"></i>Approve
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="approvePayment('${id}', '${req.type}', '${req.user_id}', ${req.amount})" class="text-white bg-gradient-to-r from-green-500 to-teal-500 p-4 rounded-lg font-bold btn-animated shadow-xl">
+                                    <i class="fas fa-check mr-2"></i>Approve
                                 </button>
-                                <button onclick="rejectPayment('${id}')" class="text-white bg-gradient-to-r from-red-500 to-orange-500 p-3 rounded-lg font-semibold btn-animated">
-                                    <i class="fas fa-times mr-1"></i>Reject
+                                <button onclick="rejectPayment('${id}')" class="text-white bg-gradient-to-r from-red-500 to-orange-500 p-4 rounded-lg font-bold btn-animated shadow-xl">
+                                    <i class="fas fa-times mr-2"></i>Reject
                                 </button>
                             </div>
                         </div>`;
@@ -733,17 +950,24 @@
             
             const historyEl = document.getElementById('historyContent');
             if (history.length === 0) {
-                historyEl.innerHTML = `<p class="text-center py-8 text-gray-400">No history yet.</p>`;
+                historyEl.innerHTML = `
+                    <div class="text-center py-12 bounce-in">
+                        <i class="fas fa-history text-6xl text-gray-700 mb-4"></i>
+                        <p class="text-gray-400">No payment history yet.</p>
+                    </div>`;
             } else {
                 historyEl.innerHTML = history.sort((a, b) => new Date(b[1].created_at) - new Date(a[1].created_at)).map(([id, req]) => `
-                    <div class="bg-white border p-4 rounded-xl shadow-lg">
+                    <div class="bg-white border p-4 rounded-xl shadow-lg card-hover">
                         <div class="flex justify-between items-start">
-                            <div>
-                                <p class="font-bold">${req.username}</p>
+                            <div class="flex-1">
+                                <p class="font-bold text-lg">${req.username}</p>
                                 <p class="text-sm text-gray-600">${req.type === 'deposit' ? 'Deposit' : 'Withdrawal'} - ${formatCurrency(req.amount)}</p>
-                                <p class="text-xs text-gray-500 mt-1">${new Date(req.created_at).toLocaleString()}</p>
+                                <p class="text-xs text-gray-500 mt-1"><i class="far fa-clock mr-1"></i>${new Date(req.created_at).toLocaleString()}</p>
                             </div>
-                            <span class="badge-${req.status} px-3 py-1 rounded-full text-xs font-bold">${req.status.toUpperCase()}</span>
+                            <span class="badge-${req.status} px-4 py-2 rounded-full text-xs font-bold">
+                                ${req.status === 'approved' ? '<i class="fas fa-check-circle mr-1"></i>' : '<i class="fas fa-times-circle mr-1"></i>'}
+                                ${req.status.toUpperCase()}
+                            </span>
                         </div>
                     </div>`).join('');
             }
@@ -756,22 +980,22 @@
             const historyContent = document.getElementById('historyContent');
             
             pendingTab.addEventListener('click', () => {
-                pendingTab.className = "flex-1 py-3 text-center font-semibold border-b-2 border-teal-500 text-teal-400 transition-all";
-                historyTab.className = "flex-1 py-3 text-center font-semibold border-b-2 border-transparent text-gray-400 transition-all";
+                pendingTab.className = "flex-1 py-4 text-center font-bold border-b-2 border-teal-500 text-teal-400 transition-all";
+                historyTab.className = "flex-1 py-4 text-center font-bold border-b-2 border-transparent text-gray-400 transition-all";
                 pendingContent.style.display = 'block';
                 historyContent.style.display = 'none';
             });
             
             historyTab.addEventListener('click', () => {
-                historyTab.className = "flex-1 py-3 text-center font-semibold border-b-2 border-teal-500 text-teal-400 transition-all";
-                pendingTab.className = "flex-1 py-3 text-center font-semibold border-b-2 border-transparent text-gray-400 transition-all";
+                historyTab.className = "flex-1 py-4 text-center font-bold border-b-2 border-teal-500 text-teal-400 transition-all";
+                pendingTab.className = "flex-1 py-4 text-center font-bold border-b-2 border-transparent text-gray-400 transition-all";
                 historyContent.style.display = 'block';
                 pendingContent.style.display = 'none';
             });
         }
 
         async function approvePayment(requestId, type, userId, amount) {
-            if (!confirm(`Approve this ${type} request for ${formatCurrency(amount)}?`)) return;
+            if (!confirm(`✅ Approve this ${type} request for ${formatCurrency(amount)}?`)) return;
             
             const user = (await db.ref(`users/${userId}`).once('value')).val();
             let newBalance;
@@ -798,12 +1022,12 @@
             };
             
             await db.ref().update(updates);
-            showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} approved successfully!`);
+            showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} approved successfully! 💰`);
             renderAdminPaymentsPage(document.getElementById('adminPaymentsPage'));
         }
 
         async function rejectPayment(requestId) {
-            if (!confirm('Reject this payment request?')) return;
+            if (!confirm('❌ Reject this payment request?')) return;
             
             await db.ref(`payment_requests/${requestId}`).update({
                 status: 'rejected',
@@ -814,103 +1038,213 @@
             renderAdminPaymentsPage(document.getElementById('adminPaymentsPage'));
         }
 
-        function renderAdminSettingsPage(container) {
+        async function renderAdminSettingsPage(container) {
             const currentTheme = localStorage.getItem('theme') || 'dark';
             const themeButtonText = currentTheme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode';
             const themeIcon = currentTheme === 'light' ? 'fa-moon' : 'fa-sun';
 
+            const bannerData = (await db.ref('app_settings/banner').once('value')).val() || {
+                title: "Welcome to NX Tournament",
+                subtitle: "Compete. Win. Dominate.",
+                enabled: true
+            };
+
             container.innerHTML = `
-                <div class="p-4 space-y-6 min-h-screen">
-                    <h2 class="text-3xl font-bold mb-6 text-gradient">Admin Settings</h2>
+                <div class="p-4 space-y-6 min-h-screen fade-in">
+                    <h2 class="text-3xl font-bold mb-6 text-gradient flex items-center">
+                        <i class="fas fa-cogs mr-3"></i>Admin Settings
+                    </h2>
                     
-                    <div class="bg-teal-50 border p-6 rounded-2xl shadow-lg">
-                        <p class="text-gray-600 text-sm">Admin Email</p>
-                        <p class="text-2xl text-teal-800 font-bold">${currentAdminData?.email || 'N/A'}</p>
+                    <div class="bg-gradient-to-r from-teal-50 to-cyan-50 border p-6 rounded-2xl shadow-lg">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 flex items-center justify-center text-2xl text-white">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Admin Account</p>
+                                <p class="text-2xl text-teal-800 font-bold">${currentAdminData?.email || 'N/A'}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border p-6 rounded-2xl shadow-2xl">
+                        <h3 class="text-xl font-bold mb-4 flex items-center text-gradient">
+                            <i class="fas fa-image mr-3"></i>App Banner Settings
+                        </h3>
+                        <form id="bannerSettingsForm" class="space-y-4">
+                            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border border-cyan-300 p-4 rounded-lg">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" id="banner-enabled" ${bannerData.enabled ? 'checked' : ''} class="mr-3 w-5 h-5 cursor-pointer">
+                                    <div>
+                                        <span class="font-bold text-gray-800">Enable Banner on Home Page</span>
+                                        <p class="text-xs text-gray-600">Show promotional banner to users</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-2">
+                                    <i class="fas fa-heading mr-2 text-teal-500"></i>Banner Title
+                                </label>
+                                <input type="text" id="banner-title" value="${bannerData.title}" placeholder="e.g., Welcome to NX Tournament" class="w-full p-3 rounded-lg" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-2">
+                                    <i class="fas fa-text-height mr-2 text-cyan-500"></i>Banner Subtitle
+                                </label>
+                                <input type="text" id="banner-subtitle" value="${bannerData.subtitle}" placeholder="e.g., Compete. Win. Dominate." class="w-full p-3 rounded-lg" required>
+                            </div>
+                            <button type="submit" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-4 rounded-lg font-bold btn-animated shadow-xl">
+                                <i class="fas fa-save mr-2"></i>Save Banner Settings
+                            </button>
+                        </form>
                     </div>
                     
-                    <div class="bg-white border p-6 rounded-2xl shadow-lg">
+                    <div class="bg-white border p-6 rounded-2xl shadow-2xl">
                         <h3 class="text-xl font-bold mb-4 flex items-center text-gradient">
-                            <i class="fas fa-palette mr-2"></i>Appearance
+                            <i class="fas fa-palette mr-3"></i>Appearance
                         </h3>
-                        <button onclick="toggleTheme()" class="w-full text-white bg-gradient-to-r from-gray-700 to-gray-800 p-4 rounded-lg font-semibold flex items-center justify-center btn-animated">
+                        <button onclick="toggleTheme()" class="w-full text-white bg-gradient-to-r from-gray-700 to-gray-800 p-4 rounded-lg font-bold flex items-center justify-center btn-animated shadow-xl">
                             <i class="fas ${themeIcon} mr-2"></i> ${themeButtonText}
                         </button>
                     </div>
                     
-                    <div class="bg-white border p-6 rounded-2xl shadow-lg">
+                    <div class="bg-white border p-6 rounded-2xl shadow-2xl">
                         <h3 class="text-xl font-bold mb-4 flex items-center text-gradient">
-                            <i class="fas fa-cog mr-2"></i>Payment Settings
+                            <i class="fas fa-money-bill-wave mr-3"></i>Payment Settings
                         </h3>
-                        <div class="bg-gradient-to-r from-cyan-900/30 to-teal-900/30 border border-cyan-500/30 p-4 rounded-lg mb-3">
-                            <p class="text-sm text-gray-300 mb-2"><i class="fas fa-mobile-alt mr-2 text-teal-400"></i>Payment Number</p>
-                            <p class="font-mono text-teal-300 font-bold text-lg">01712345678</p>
-                            <p class="text-xs text-gray-400 mt-2">Users will send money to this number</p>
+                        <div class="bg-gradient-to-r from-cyan-900/30 to-teal-900/30 border border-cyan-500/30 p-5 rounded-xl">
+                            <div class="flex items-center gap-4 mb-3">
+                                <div class="w-12 h-12 rounded-full bg-teal-500 flex items-center justify-center text-white text-xl">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-300">Payment Number</p>
+                                    <p class="font-mono text-teal-300 font-bold text-xl">01712345678</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-400 bg-black/20 p-2 rounded">
+                                <i class="fas fa-info-circle mr-1"></i>Users will send money to this number for deposits
+                            </p>
                         </div>
                     </div>
                     
-                    <div class="bg-white border p-6 rounded-2xl shadow-lg">
+                    <div class="bg-white border p-6 rounded-2xl shadow-2xl">
                         <h3 class="text-xl font-bold mb-4 flex items-center text-gradient">
-                            <i class="fas fa-key mr-2"></i>Security
+                            <i class="fas fa-key mr-3"></i>Security
                         </h3>
-                        <button onclick="changePassword()" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-4 rounded-lg font-semibold btn-animated">
-                            Send Password Reset Email
+                        <button onclick="changePassword()" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-4 rounded-lg font-bold btn-animated shadow-xl">
+                            <i class="fas fa-envelope mr-2"></i>Send Password Reset Email
                         </button>
                     </div>
                     
-                    <a href="index.html" class="block w-full text-center text-gray-800 bg-gray-200 hover:bg-gray-300 p-4 rounded-lg font-semibold transition-all">
+                    <a href="index.html" class="block w-full text-center text-white bg-gradient-to-r from-blue-500 to-purple-500 p-4 rounded-lg font-bold transition-all btn-animated shadow-xl">
                         <i class="fas fa-external-link-alt mr-2"></i>Go to User Panel
                     </a>
                 </div>`;
+
+            document.getElementById('bannerSettingsForm').addEventListener('submit', saveBannerSettings);
         }
 
-        function logout() { auth.signOut(); }
+        async function saveBannerSettings(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+            btn.disabled = true;
+
+            try {
+                const bannerData = {
+                    enabled: document.getElementById('banner-enabled').checked,
+                    title: document.getElementById('banner-title').value,
+                    subtitle: document.getElementById('banner-subtitle').value
+                };
+                
+                await db.ref('app_settings/banner').set(bannerData);
+                showToast('Banner settings saved successfully! ✨');
+            } catch (error) {
+                showToast('Failed to save settings', true);
+            } finally {
+                btn.innerHTML = '<i class="fas fa-save mr-2"></i>Save Banner Settings';
+                btn.disabled = false;
+            }
+        }
+
+        function logout() { 
+            if (confirm('Are you sure you want to logout?')) {
+                auth.signOut();
+                showToast('Logged out successfully');
+            }
+        }
         
         function changePassword() { 
             auth.sendPasswordResetEmail(auth.currentUser.email)
-                .then(() => showToast(`Password reset link sent to ${auth.currentUser.email}`))
+                .then(() => showToast(`Password reset link sent to ${auth.currentUser.email} 📧`))
                 .catch(err => showToast(err.message, true)); 
         }
 
         async function createTournament(e) {
             e.preventDefault();
             const form = e.target;
-            const newTournament = {
-                title: form['t-title'].value, 
-                game_name: form['t-game-name'].value, 
-                game_type: form['t-game-type'].value,
-                entry_fee: Number(form['t-fee'].value), 
-                prize_pool: Number(form['t-prize'].value),
-                match_time: new Date(form['t-time'].value).toISOString(), 
-                commission_percentage: Number(form['t-commission'].value),
-                status: 'Upcoming', 
-                created_at: new Date().toISOString()
-            };
-            
-            await db.ref('tournaments').push(newTournament);
-            showToast('Tournament created successfully!');
-            renderAdminTournamentPage(document.getElementById('adminTournamentPage')); 
+            const btn = form.querySelector('button[type="submit"]');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating Tournament...';
+            btn.disabled = true;
+
+            try {
+                const newTournament = {
+                    title: form['t-title'].value, 
+                    game_name: form['t-game-name'].value, 
+                    game_type: form['t-game-type'].value,
+                    entry_fee: Number(form['t-fee'].value), 
+                    prize_pool: Number(form['t-prize'].value),
+                    match_time: new Date(form['t-time'].value).toISOString(), 
+                    commission_percentage: Number(form['t-commission'].value),
+                    status: 'Upcoming', 
+                    created_at: new Date().toISOString()
+                };
+                
+                await db.ref('tournaments').push(newTournament);
+                showToast('Tournament created successfully! 🎉');
+                renderAdminTournamentPage(document.getElementById('adminTournamentPage')); 
+            } catch (error) {
+                showToast('Failed to create tournament', true);
+                btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Create Tournament';
+                btn.disabled = false;
+            }
         }
 
         async function deleteTournament(tournamentId) {
-            if (confirm('Are you sure you want to delete this tournament?')) {
-                await db.ref().update({ 
-                    [`/tournaments/${tournamentId}`]: null, 
-                    [`/participants/${tournamentId}`]: null 
-                });
-                showToast('Tournament deleted.');
-                renderAdminTournamentPage(document.getElementById('adminTournamentPage'));
+            if (confirm('⚠️ Are you sure you want to delete this tournament? This action cannot be undone.')) {
+                try {
+                    await db.ref().update({ 
+                        [`/tournaments/${tournamentId}`]: null, 
+                        [`/participants/${tournamentId}`]: null 
+                    });
+                    showToast('Tournament deleted successfully.');
+                    renderAdminTournamentPage(document.getElementById('adminTournamentPage'));
+                } catch (error) {
+                    showToast('Failed to delete tournament', true);
+                }
             }
         }
         
         async function updateRoomDetails(e) {
             e.preventDefault();
-            await db.ref(`tournaments/${currentTournamentId}`).update({
-                room_id: document.getElementById('t-roomid').value,
-                room_password: document.getElementById('t-roompass').value,
-                status: document.getElementById('t-status').value
-            });
-            showToast('Tournament details updated!');
-            renderAdminManageTournamentPage(document.getElementById('adminManageTournamentPage'));
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating...';
+            btn.disabled = true;
+
+            try {
+                await db.ref(`tournaments/${currentTournamentId}`).update({
+                    room_id: document.getElementById('t-roomid').value,
+                    room_password: document.getElementById('t-roompass').value,
+                    status: document.getElementById('t-status').value
+                });
+                showToast('Tournament details updated! ✅');
+                renderAdminManageTournamentPage(document.getElementById('adminManageTournamentPage'));
+            } catch (error) {
+                showToast('Failed to update details', true);
+                btn.innerHTML = '<i class="fas fa-save mr-2"></i>Update Tournament Details';
+                btn.disabled = false;
+            }
         }
 
         async function declareWinner(e) {
@@ -918,82 +1252,110 @@
             const winnerId = document.getElementById('winner-select').value;
             if (!winnerId) return showToast('Please select a winner!', true);
             
-            const tournament = (await db.ref(`tournaments/${currentTournamentId}`).once('value')).val();
-            const winner = (await db.ref(`users/${winnerId}`).once('value')).val();
-            const newBalance = (winner.wallet_balance || 0) + tournament.prize_pool;
-            
-            const updates = {
-                [`/tournaments/${currentTournamentId}/status`]: 'Completed', 
-                [`/tournaments/${currentTournamentId}/winner_id`]: winnerId,
-                [`/participants/${currentTournamentId}/${winnerId}/status`]: 'Winner', 
-                [`/users/${winnerId}/wallet_balance`]: newBalance,
-                [`/transactions/${winnerId}/${db.ref().child('transactions').push().key}`]: {
-                    amount: tournament.prize_pool, 
-                    type: 'credit', 
-                    description: `Prize for winning: ${tournament.title}`, 
-                    created_at: new Date().toISOString()
-                }
-            };
-            
-            await db.ref().update(updates);
-            showToast('Winner declared and prize distributed!');
-            renderAdminManageTournamentPage(document.getElementById('adminManageTournamentPage'));
+            if (!confirm('🏆 Are you sure you want to declare this user as the winner? Prize will be distributed immediately.')) return;
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+            btn.disabled = true;
+
+            try {
+                const tournament = (await db.ref(`tournaments/${currentTournamentId}`).once('value')).val();
+                const winner = (await db.ref(`users/${winnerId}`).once('value')).val();
+                const newBalance = (winner.wallet_balance || 0) + tournament.prize_pool;
+                
+                const updates = {
+                    [`/tournaments/${currentTournamentId}/status`]: 'Completed', 
+                    [`/tournaments/${currentTournamentId}/winner_id`]: winnerId,
+                    [`/participants/${currentTournamentId}/${winnerId}/status`]: 'Winner', 
+                    [`/users/${winnerId}/wallet_balance`]: newBalance,
+                    [`/transactions/${winnerId}/${db.ref().child('transactions').push().key}`]: {
+                        amount: tournament.prize_pool, 
+                        type: 'credit', 
+                        description: `Prize for winning: ${tournament.title}`, 
+                        created_at: new Date().toISOString()
+                    }
+                };
+                
+                await db.ref().update(updates);
+                showToast('Winner declared and prize distributed! 🎉👑');
+                renderAdminManageTournamentPage(document.getElementById('adminManageTournamentPage'));
+            } catch (error) {
+                showToast('Failed to declare winner', true);
+                btn.innerHTML = '<i class="fas fa-trophy mr-2"></i>Declare Winner & Distribute Prize';
+                btn.disabled = false;
+            }
         }
 
         async function addMoneyToUser(userId, username) {
-            const amount = prompt(`Enter amount to add to ${username}'s wallet (৳):`);
+            const amount = prompt(`💰 Enter amount to add to ${username}'s wallet (৳):`);
             if (!amount || isNaN(amount) || Number(amount) <= 0) return showToast('Invalid amount!', true);
             
-            const user = (await db.ref(`users/${userId}`).once('value')).val();
-            const newBalance = (user.wallet_balance || 0) + Number(amount);
-            
-            const updates = {
-                [`/users/${userId}/wallet_balance`]: newBalance,
-                [`/transactions/${userId}/${db.ref().child('transactions').push().key}`]: {
-                    amount: Number(amount),
-                    type: 'credit',
-                    description: 'Money added by admin',
-                    created_at: new Date().toISOString()
-                }
-            };
-            
-            await db.ref().update(updates);
-            showToast(`${formatCurrency(amount)} added to ${username}'s wallet!`);
-            renderAdminUsersPage(document.getElementById('adminUsersPage'));
+            if (!confirm(`Add ${formatCurrency(amount)} to ${username}'s wallet?`)) return;
+
+            try {
+                const user = (await db.ref(`users/${userId}`).once('value')).val();
+                const newBalance = (user.wallet_balance || 0) + Number(amount);
+                
+                const updates = {
+                    [`/users/${userId}/wallet_balance`]: newBalance,
+                    [`/transactions/${userId}/${db.ref().child('transactions').push().key}`]: {
+                        amount: Number(amount),
+                        type: 'credit',
+                        description: 'Money added by admin',
+                        created_at: new Date().toISOString()
+                    }
+                };
+                
+                await db.ref().update(updates);
+                showToast(`${formatCurrency(amount)} added to ${username}'s wallet! 💸`);
+                renderAdminUsersPage(document.getElementById('adminUsersPage'));
+            } catch (error) {
+                showToast('Failed to add money', true);
+            }
         }
 
         async function deductMoneyFromUser(userId, username) {
-            const amount = prompt(`Enter amount to deduct from ${username}'s wallet (৳):`);
+            const amount = prompt(`💸 Enter amount to deduct from ${username}'s wallet (৳):`);
             if (!amount || isNaN(amount) || Number(amount) <= 0) return showToast('Invalid amount!', true);
             
             const user = (await db.ref(`users/${userId}`).once('value')).val();
             if ((user.wallet_balance || 0) < Number(amount)) {
                 return showToast('User has insufficient balance!', true);
             }
+
+            if (!confirm(`Deduct ${formatCurrency(amount)} from ${username}'s wallet?`)) return;
             
-            const newBalance = (user.wallet_balance || 0) - Number(amount);
-            
-            const updates = {
-                [`/users/${userId}/wallet_balance`]: newBalance,
-                [`/transactions/${userId}/${db.ref().child('transactions').push().key}`]: {
-                    amount: Number(amount),
-                    type: 'debit',
-                    description: 'Money deducted by admin',
-                    created_at: new Date().toISOString()
-                }
-            };
-            
-            await db.ref().update(updates);
-            showToast(`${formatCurrency(amount)} deducted from ${username}'s wallet!`);
-            renderAdminUsersPage(document.getElementById('adminUsersPage'));
+            try {
+                const newBalance = (user.wallet_balance || 0) - Number(amount);
+                
+                const updates = {
+                    [`/users/${userId}/wallet_balance`]: newBalance,
+                    [`/transactions/${userId}/${db.ref().child('transactions').push().key}`]: {
+                        amount: Number(amount),
+                        type: 'debit',
+                        description: 'Money deducted by admin',
+                        created_at: new Date().toISOString()
+                    }
+                };
+                
+                await db.ref().update(updates);
+                showToast(`${formatCurrency(amount)} deducted from ${username}'s wallet!`);
+                renderAdminUsersPage(document.getElementById('adminUsersPage'));
+            } catch (error) {
+                showToast('Failed to deduct money', true);
+            }
         }
 
         async function makeAdmin(userId, username) {
-            if (!confirm(`Make ${username} an admin? They will have full admin access.`)) return;
+            if (!confirm(`👑 Make ${username} an admin? They will have full admin access.`)) return;
             
-            await db.ref(`users/${userId}/role`).set('admin');
-            showToast(`${username} is now an admin!`);
-            renderAdminUsersPage(document.getElementById('adminUsersPage'));
+            try {
+                await db.ref(`users/${userId}/role`).set('admin');
+                showToast(`${username} is now an admin! 👑`);
+                renderAdminUsersPage(document.getElementById('adminUsersPage'));
+            } catch (error) {
+                showToast('Failed to update user role', true);
+            }
         }
 
         async function removeAdmin(userId, username) {
@@ -1002,10 +1364,19 @@
             }
             if (!confirm(`Remove admin privileges from ${username}?`)) return;
             
-            await db.ref(`users/${userId}/role`).set('user');
-            showToast(`Admin privileges removed from ${username}.`);
-            renderAdminUsersPage(document.getElementById('adminUsersPage'));
+            try {
+                await db.ref(`users/${userId}/role`).set('user');
+                showToast(`Admin privileges removed from ${username}.`);
+                renderAdminUsersPage(document.getElementById('adminUsersPage'));
+            } catch (error) {
+                showToast('Failed to update user role', true);
+            }
         }
+
+        // Prevent pull-to-refresh
+        document.body.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
     </script>
 </body>
-</html>
+    </html>
