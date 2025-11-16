@@ -1,161 +1,1182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Maintenance Mode</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NX Tournament</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(20, 184, 166, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(20, 184, 166, 0.8); }
+        }
+        @keyframes slide-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes shine {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        @keyframes bounce-in {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes slide-up {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        body { 
+            -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; overflow-x: hidden;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            background-size: 200% 200%;
+            animation: gradient-shift 15s ease infinite;
+            color: #e2e8f0;
+        }
+        
+        #app-container {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        .page { display: none; animation: slide-in 0.5s ease; } 
+        .page.active { display: block; } 
+        .modal { display: none; } 
+        .modal.active { display: flex; animation: slide-up 0.3s ease; }
 
-    body {
-      font-family: "Poppins", sans-serif;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(135deg, #00111f, #003366, #00aaff);
-      background-size: 300% 300%;
-      animation: bgMove 20s infinite alternate;
-      color: #fff;
-      overflow: hidden;
-      position: relative;
-    }
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(20, 184, 166, 0.4);
+        }
+        .card-hover:active {
+            transform: translateY(-4px) scale(0.98);
+        }
 
-    /* Background animation */
-    @keyframes bgMove {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 100% 50%; }
-    }
+        .btn-animated {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .btn-animated:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(20, 184, 166, 0.5);
+        }
+        .btn-animated:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(20, 184, 166, 0.3);
+        }
+        .btn-animated::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .btn-animated:active::before {
+            width: 300px;
+            height: 300px;
+        }
 
-    /* Floating particles */
-    .particle {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      background: #0ff;
-      box-shadow: 0 0 15px #0ff;
-      border-radius: 50%;
-      animation: float 6s infinite ease-in-out;
-      opacity: 0.5;
-    }
+        .banner-shine {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            background-size: 200% 100%;
+            animation: shine 3s infinite;
+        }
 
-    @keyframes float {
-      0% { transform: translateY(0); opacity: 0.4; }
-      50% { transform: translateY(-40px); opacity: 1; }
-      100% { transform: translateY(0); opacity: 0.4; }
-    }
+        .floating { animation: float 3s ease-in-out infinite; }
+        .glow { animation: pulse-glow 2s ease-in-out infinite; }
+        .bounce-in { animation: bounce-in 0.6s ease; }
 
-    /* Container */
-    .container {
-      text-align: center;
-      z-index: 10;
-      animation: fadeIn 2s ease-in-out;
-    }
+        ::-webkit-scrollbar { width: 8px; } 
+        ::-webkit-scrollbar-track { background: #1e293b; } 
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #06b6d4, #14b8a6); border-radius: 10px; }
+        
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; margin: 0; 
+        }
+        input[type=number] { -moz-appearance: textfield; }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(40px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+        .bg-card { 
+            background: rgba(30, 41, 59, 0.8); 
+            border: 1px solid rgba(20, 184, 166, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        .text-gradient { 
+            background: linear-gradient(135deg, #06b6d4, #14b8a6, #10b981); 
+            background-size: 200% 200%; 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            animation: gradient-shift 5s ease infinite; 
+        }
+        
+        input, select {
+            background: rgba(30, 41, 59, 0.8) !important;
+            border: 1px solid rgba(20, 184, 166, 0.3);
+            color: #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus {
+            border-color: #14b8a6;
+            box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+            transform: scale(1.02);
+        }
+        input::placeholder { color: #64748b; }
 
-    /* Icon */
-    .icon {
-      font-size: 4.5em;
-      margin-bottom: 15px;
-      animation: spin 4s linear infinite;
-      text-shadow: 0 0 15px #00e6ff, 0 0 30px #00e6ff;
-    }
+        #app-header, #user-bottom-nav {
+            background: rgba(15, 23, 42, 0.98);
+            backdrop-filter: blur(20px);
+            border-color: rgba(20, 184, 166, 0.2);
+        }
 
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
+        .nav-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-item:hover {
+            transform: translateY(-4px) scale(1.1);
+        }
+        .nav-item:active {
+            transform: translateY(-2px) scale(1.05);
+        }
 
-    /* Title */
-    h1 {
-      font-size: 3em;
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: #a7eeff;
-      text-shadow: 0 0 10px #00d9ff, 0 0 40px #0099cc;
-      animation: glow 2s ease-in-out infinite alternate;
-    }
+        .status-badge {
+            animation: pulse 2s ease-in-out infinite;
+        }
 
-    @keyframes glow {
-      0% { text-shadow: 0 0 10px #00d9ff; }
-      100% { text-shadow: 0 0 25px #00f6ff; }
-    }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
 
-    /* Sub text */
-    p {
-      font-size: 1.2em;
-      color: #d9faff;
-      margin-bottom: 20px;
-      opacity: 0.9;
-    }
+        .hero-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0891b2 50%, #059669 100%);
+            background-size: 200% 200%;
+            animation: gradient-shift 10s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 8s ease-in-out infinite;
+        }
 
-    /* Loader dots */
-    .dots span {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      margin: 0 4px;
-      background: #00eaff;
-      border-radius: 50%;
-      animation: bounce 1.5s infinite;
-      box-shadow: 0 0 10px #00eaff;
-    }
+        .tournament-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+        }
+        .tournament-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            padding: 2px;
+            background: linear-gradient(135deg, #06b6d4, #14b8a6);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            border-radius: 1rem;
+            opacity: 0.5;
+        }
 
-    .dots span:nth-child(2) { animation-delay: 0.3s; }
-    .dots span:nth-child(3) { animation-delay: 0.6s; }
+        .payment-confirmed {
+            border: 2px solid #22c55e !important;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%) !important;
+        }
 
-    @keyframes bounce {
-      0%, 80%, 100% { transform: scale(0); }
-      40% { transform: scale(1); }
-    }
-
-    /* Watermark */
-    .watermark {
-      position: absolute;
-      bottom: 12px;
-      right: 20px;
-      font-size: 0.9em;
-      color: rgba(255,255,255,0.35);
-      font-weight: 300;
-      text-shadow: 0 0 10px #007799;
-      pointer-events: none;
-    }
-  </style>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake { animation: shake 0.5s ease; }
+    </style>
 </head>
+<body class="font-sans">
 
-<body>
+    <div id="app-container" class="max-w-md mx-auto min-h-screen shadow-2xl">
 
-  <!-- Neon floating particles -->
-  <div class="particle" style="top:20%; left:10%; animation-duration:7s;"></div>
-  <div class="particle" style="top:70%; left:30%; animation-duration:5s;"></div>
-  <div class="particle" style="top:40%; left:80%; animation-duration:6s;"></div>
-  <div class="particle" style="top:85%; left:60%; animation-duration:8s;"></div>
+        <header id="app-header" class="p-4 flex justify-between items-center sticky top-0 z-50 border-b" style="display: none;">
+            <h1 class="text-xl font-bold text-gradient">NX Tournament</h1>
+            <div id="wallet-balance-header" class="px-4 py-2 bg-card rounded-full text-sm font-semibold glow">
+                <i class="fas fa-wallet text-teal-400"></i> ৳...
+            </div>
+        </header>
 
-  <div class="container">
-    <div class="icon">⚙️</div>
+        <main id="main-content" class="pb-20">
+            <div id="loginPage" class="page"></div>
+            <div id="homePage" class="page"></div>
+            <div id="myTournamentsPage" class="page"></div>
+            <div id="walletPage" class="page"></div>
+            <div id="profilePage" class="page"></div>
+        </main>
 
-    <h1>We'll Be Back Soon</h1>
-
-    <p>Our app/web is undergoing maintenance. Thank you for your patience.</p>
-
-    <div class="dots">
-      <span></span>
-      <span></span>
-      <span></span>
+        <nav id="user-bottom-nav" class="fixed bottom-0 left-0 right-0 border-t max-w-md mx-auto" style="display: none;">
+            <div class="flex justify-around p-3">
+                <a href="#" class="nav-item text-center" onclick="navigateTo('homePage')">
+                    <i class="fas fa-home fa-lg"></i>
+                    <span class="block text-xs mt-1">Home</span>
+                </a>
+                <a href="#" class="nav-item text-center" onclick="navigateTo('myTournamentsPage')">
+                    <i class="fas fa-trophy fa-lg"></i>
+                    <span class="block text-xs mt-1">Tournaments</span>
+                </a>
+                <a href="#" class="nav-item text-center" onclick="navigateTo('walletPage')">
+                    <i class="fas fa-wallet fa-lg"></i>
+                    <span class="block text-xs mt-1">Wallet</span>
+                </a>
+                <a href="#" class="nav-item text-center" onclick="navigateTo('profilePage')">
+                    <i class="fas fa-user-cog fa-lg"></i>
+                    <span class="block text-xs mt-1">Profile</span>
+                </a>
+            </div>
+        </nav>
     </div>
-  </div>
 
-  <div class="watermark">Made by Joy • InfinityForge</div>
+    <!-- Join Tournament Modal -->
+    <div id="joinTournamentModal" class="modal fixed inset-0 bg-black bg-opacity-90 items-center justify-center z-50 p-4">
+        <div class="bg-card p-6 rounded-2xl w-full max-w-sm shadow-2xl border-2 border-teal-500/30">
+            <h3 class="text-2xl font-bold mb-4 text-gradient flex items-center">
+                <i class="fas fa-gamepad mr-2"></i>Join Tournament
+            </h3>
+            <form id="joinTournamentForm" class="space-y-4">
+                <input type="hidden" id="join-tournament-id">
+                <input type="hidden" id="join-entry-fee">
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">
+                        <i class="fas fa-user mr-1 text-teal-400"></i>In-Game Name
+                    </label>
+                    <input type="text" id="join-game-name" placeholder="Enter your game username" class="w-full p-3 rounded-lg" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">
+                        <i class="fas fa-id-card mr-1 text-teal-400"></i>Game UID
+                    </label>
+                    <input type="text" id="join-game-uid" placeholder="Enter your game UID" class="w-full p-3 rounded-lg" required>
+                </div>
 
+                <div class="bg-gradient-to-r from-cyan-900/30 to-teal-900/30 border border-cyan-500/30 p-3 rounded-lg">
+                    <p class="text-sm text-cyan-300 mb-1"><i class="fas fa-info-circle mr-1"></i>Entry Fee</p>
+                    <p class="text-2xl font-bold text-teal-300" id="join-fee-display">৳0</p>
+                </div>
+
+                <button type="submit" class="w-full text-white bg-gradient-to-r from-green-500 to-teal-500 p-4 rounded-lg font-bold text-lg btn-animated">
+                    <i class="fas fa-check-circle mr-2"></i>Confirm & Join
+                </button>
+                <button type="button" onclick="toggleModal('joinTournamentModal', false)" class="w-full bg-gray-700 hover:bg-gray-600 p-3 rounded-lg font-semibold transition-all">
+                    Cancel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Deposit Modal -->
+    <div id="depositMoneyModal" class="modal fixed inset-0 bg-black bg-opacity-90 items-center justify-center z-50 p-4">
+        <div class="bg-card p-6 rounded-2xl w-full max-w-sm shadow-2xl border-2 border-teal-500/30">
+            <h3 class="text-2xl font-bold mb-4 text-gradient flex items-center">
+                <i class="fas fa-plus-circle mr-2"></i>Deposit Money
+            </h3>
+            <form id="depositMoneyForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Amount (৳)</label>
+                    <input type="number" id="deposit-amount" placeholder="Minimum ৳10" class="w-full p-3 rounded-lg text-lg font-semibold" required min="10">
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Payment Method</label>
+                    <select id="deposit-method" class="w-full p-3 rounded-lg" required>
+                        <option value="">Select Method</option>
+                        <option value="bkash">bKash</option>
+                        <option value="nagad">Nagad</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Your Phone Number</label>
+                    <input type="text" id="deposit-phone" placeholder="01XXXXXXXXX" class="w-full p-3 rounded-lg" required pattern="[0-9]{11}" maxlength="11">
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Transaction ID</label>
+                    <input type="text" id="deposit-trxid" placeholder="e.g., BKD7H2G9X" class="w-full p-3 rounded-lg" required>
+                </div>
+
+                <div class="bg-gradient-to-r from-cyan-900/30 to-teal-900/30 border border-cyan-500/30 p-4 rounded-lg space-y-2">
+                    <p class="text-sm text-cyan-300 font-semibold"><i class="fas fa-mobile-alt mr-2"></i>Payment Instructions:</p>
+                    <ol class="text-xs text-gray-300 space-y-1 pl-4">
+                        <li>1. Send money to: <span class="font-mono text-teal-300 font-bold">01712345678</span></li>
+                        <li>2. Copy and paste the Transaction ID above</li>
+                        <li>3. Click "Confirm Payment" to verify</li>
+                        <li>4. Then submit your request</li>
+                    </ol>
+                    <p class="text-xs text-yellow-300 mt-2"><i class="fas fa-clock mr-1"></i>Approval time: 5-10 minutes</p>
+                </div>
+
+                <button type="button" id="confirmPaymentBtn" class="w-full text-white bg-gradient-to-r from-yellow-500 to-orange-500 p-4 rounded-lg font-bold text-lg btn-animated">
+                    <i class="fas fa-check-double mr-2"></i>Confirm Payment
+                </button>
+
+                <button type="submit" id="submitDepositBtn" class="w-full text-white bg-gradient-to-r from-green-500 to-teal-500 p-4 rounded-lg font-bold text-lg btn-animated" disabled style="opacity: 0.5; cursor: not-allowed;">
+                    <i class="fas fa-paper-plane mr-2"></i>Submit Request
+                </button>
+                
+                <button type="button" onclick="toggleModal('depositMoneyModal', false); resetDepositForm();" class="w-full bg-gray-700 hover:bg-gray-600 p-3 rounded-lg font-semibold transition-all">
+                    Cancel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Withdraw Modal -->
+    <div id="withdrawMoneyModal" class="modal fixed inset-0 bg-black bg-opacity-90 items-center justify-center z-50 p-4">
+        <div class="bg-card p-6 rounded-2xl w-full max-w-sm shadow-2xl border-2 border-teal-500/30">
+            <h3 class="text-2xl font-bold mb-4 text-gradient flex items-center">
+                <i class="fas fa-money-bill-wave mr-2"></i>Withdraw Money
+            </h3>
+            <form id="withdrawMoneyForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Amount (৳)</label>
+                    <input type="number" id="withdraw-amount" placeholder="Minimum ৳100" class="w-full p-3 rounded-lg text-lg font-semibold" required min="100">
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Payment Method</label>
+                    <select id="withdraw-method" class="w-full p-3 rounded-lg" required>
+                        <option value="">Select Method</option>
+                        <option value="bkash">bKash</option>
+                        <option value="nagad">Nagad</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Your Phone Number</label>
+                    <input type="text" id="withdraw-phone" placeholder="01XXXXXXXXX" class="w-full p-3 rounded-lg" required pattern="[0-9]{11}" maxlength="11">
+                </div>
+
+                <div class="bg-gradient-to-r from-orange-900/30 to-red-900/30 border border-orange-500/30 p-3 rounded-lg">
+                    <p class="text-sm text-orange-300 mb-1"><i class="fas fa-exclamation-triangle mr-1"></i>Important:</p>
+                    <p class="text-xs text-gray-300">• Minimum: ৳100</p>
+                    <p class="text-xs text-gray-300">• Processing: 1-24 hours</p>
+                    <p class="text-xs text-gray-300">• Funds will be sent to your number</p>
+                </div>
+
+                <button type="submit" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-4 rounded-lg font-bold text-lg btn-animated">
+                    <i class="fas fa-paper-plane mr-2"></i>Request Withdrawal
+                </button>
+                <button type="button" onclick="toggleModal('withdrawMoneyModal', false)" class="w-full bg-gray-700 hover:bg-gray-600 p-3 rounded-lg font-semibold transition-all">
+                    Cancel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 text-white py-3 px-6 rounded-lg shadow-2xl z-[1000]" style="display: none;"></div>
+
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.body.style.userSelect = 'none';
+        document.addEventListener('gesturestart', e => e.preventDefault());
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB9ttTQxsCMHoNfYI9Spo0HUMNyTFD942Y",
+            authDomain: "nxtournament-47cd3.firebaseapp.com",
+            databaseURL: "https://nxtournament-47cd3-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "nxtournament-47cd3",
+            storageBucket: "nxtournament-47cd3.firebasestorage.app",
+            messagingSenderId: "843114254203",
+            appId: "1:843114254203:web:d9ffe6a0cbfe5c8f21b7de"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        let currentUserData = null;
+        let paymentConfirmed = false;
+        let appBanner = null;
+
+        function navigateTo(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId)?.classList.add('active');
+            loadPageContent(pageId);
+            document.querySelectorAll('.nav-item').forEach(item => {
+                const isActive = item.getAttribute('onclick').includes(pageId);
+                item.classList.toggle('text-teal-400', isActive);
+                item.classList.toggle('text-gray-400', !isActive);
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `fixed top-5 left-1/2 transform -translate-x-1/2 text-white py-3 px-6 rounded-lg shadow-2xl z-[1000] bounce-in ${isError ? 'bg-gradient-to-r from-red-500 to-orange-500' : 'bg-gradient-to-r from-green-500 to-teal-500'}`;
+            toast.style.display = 'block';
+            setTimeout(() => { 
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.style.opacity = '1';
+                }, 300);
+            }, 3000);
+        }
+
+        function formatCurrency(amount) {
+            return `৳${Number(amount).toLocaleString('en-BD', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+        }
+
+        function toggleModal(modalId, show) { 
+            const modal = document.getElementById(modalId);
+            if (show) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            } else {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Load app banner
+        async function loadAppBanner() {
+            const bannerData = (await db.ref('app_settings/banner').once('value')).val();
+            appBanner = bannerData || {
+                title: "Welcome to NX Tournament",
+                subtitle: "Compete. Win. Dominate.",
+                enabled: true
+            };
+        }
+
+        auth.onAuthStateChanged(async user => {
+            const showApp = !!user;
+            document.getElementById('app-header').style.display = showApp ? 'flex' : 'none';
+            document.getElementById('user-bottom-nav').style.display = showApp ? 'block' : 'none';
+            
+            if (showApp) {
+                await loadAppBanner();
+                db.ref('users/' + user.uid).on('value', snap => {
+                    currentUserData = { uid: user.uid, ...snap.val() };
+                    const newBalanceFormatted = formatCurrency(currentUserData.wallet_balance || 0);
+                    
+                    const headerBalanceEl = document.getElementById('wallet-balance-header');
+                    if (headerBalanceEl) headerBalanceEl.innerHTML = `<i class="fas fa-wallet text-teal-400"></i> ${newBalanceFormatted}`;
+                    
+                    const mainBalanceEl = document.getElementById('wallet-main-balance');
+                    if (mainBalanceEl) mainBalanceEl.textContent = newBalanceFormatted;
+                });
+                navigateTo('homePage');
+            } else {
+                currentUserData = null;
+                navigateTo('loginPage');
+            }
+        });
+
+        function loadPageContent(pageId) {
+            const pageContainer = document.getElementById(pageId);
+            if (!pageContainer) return;
+            switch (pageId) {
+                case 'loginPage': renderLoginPage(pageContainer); break;
+                case 'homePage': renderHomePage(pageContainer); break;
+                case 'myTournamentsPage': renderMyTournamentsPage(pageContainer); break;
+                case 'walletPage': renderWalletPage(pageContainer); break;
+                case 'profilePage': renderProfilePage(pageContainer); break;
+            }
+        }
+
+        function renderLoginPage(container) {
+            container.innerHTML = `
+                <div class="p-6 h-screen flex flex-col justify-center">
+                    <div class="text-center mb-8 floating">
+                        <div class="w-32 h-32 mx-auto rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 flex items-center justify-center text-6xl glow shadow-2xl">
+                            <i class="fas fa-trophy text-white"></i>
+                        </div>
+                    </div>
+                    <h1 class="text-5xl font-bold text-center mb-2 text-gradient">NX Tournament</h1>
+                    <p class="text-center text-gray-400 mb-8 text-lg">Compete. Win. Dominate.</p>
+                    
+                    <div class="bg-card p-6 rounded-2xl shadow-2xl border border-teal-500/20">
+                        <div class="flex border-b border-teal-500/30 mb-6">
+                            <button id="loginTabBtn" class="flex-1 py-3 text-center font-bold border-b-2 border-teal-500 text-teal-400 transition-all">
+                                <i class="fas fa-sign-in-alt mr-1"></i>Login
+                            </button>
+                            <button id="signupTabBtn" class="flex-1 py-3 text-center font-bold border-b-2 border-transparent text-gray-400 transition-all">
+                                <i class="fas fa-user-plus mr-1"></i>Sign Up
+                            </button>
+                        </div>
+                        
+                        <form id="loginForm" class="space-y-4">
+                            <input type="email" id="loginEmail" placeholder="Email Address" class="w-full p-3 rounded-lg" required>
+                            <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 rounded-lg" required>
+                            <button type="submit" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-4 rounded-lg font-bold text-lg btn-animated">
+                                <i class="fas fa-arrow-right mr-2"></i>Login
+                            </button>
+                        </form>
+                        
+                        <form id="signupForm" class="space-y-4" style="display:none;">
+                            <input type="text" id="signupUsername" placeholder="Username" class="w-full p-3 rounded-lg" required>
+                            <input type="email" id="signupEmail" placeholder="Email Address" class="w-full p-3 rounded-lg" required>
+                            <input type="password" id="signupPassword" placeholder="Password (min. 6 chars)" class="w-full p-3 rounded-lg" required>
+                            <button type="submit" class="w-full text-white bg-gradient-to-r from-green-500 to-teal-500 p-4 rounded-lg font-bold text-lg btn-animated">
+                                <i class="fas fa-user-plus mr-2"></i>Create Account
+                            </button>
+                        </form>
+                    </div>
+                </div>`;
+            
+            attachLoginListeners();
+        }
+
+        async function renderHomePage(container) {
+            container.innerHTML = `
+                <div class="min-h-screen">
+                    <!-- Hero Banner -->
+                    ${appBanner && appBanner.enabled ? `
+                    <div class="hero-banner p-8 text-center relative overflow-hidden">
+                        <div class="relative z-10">
+                            <h2 class="text-4xl font-bold text-white mb-2 floating">${appBanner.title}</h2>
+                            <p class="text-xl text-cyan-100">${appBanner.subtitle}</p>
+                            <div class="mt-4 flex justify-center gap-2">
+                                <i class="fas fa-trophy text-yellow-300 text-2xl floating"></i>
+                                <i class="fas fa-gamepad text-teal-300 text-2xl floating" style="animation-delay: 0.2s"></i>
+                                <i class="fas fa-crown text-yellow-300 text-2xl floating" style="animation-delay: 0.4s"></i>
+                            </div>
+                        </div>
+                        <div class="banner-shine absolute inset-0"></div>
+                    </div>
+                    ` : ''}
+
+                    <div class="p-4">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-3xl font-bold text-gradient flex items-center">
+                                <i class="fas fa-fire mr-2 text-orange-500"></i>Live Tournaments
+                            </h2>
+                        </div>
+                        <div id="tournament-list" class="space-y-6"></div>
+                    </div>
+                </div>`;
+            
+            const listEl = document.getElementById('tournament-list');
+            listEl.innerHTML = `<div class="text-center py-12"><i class="fas fa-spinner fa-spin fa-3x text-teal-500"></i><p class="text-gray-400 mt-4">Loading tournaments...</p></div>`;
+            
+            const tournaments = (await db.ref('tournaments').orderByChild('status').equalTo('Upcoming').once('value')).val();
+            if (!tournaments) {
+                listEl.innerHTML = `
+                    <div class="text-center py-16 bounce-in">
+                        <div class="w-32 h-32 mx-auto rounded-full bg-gradient-to-r from-gray-700 to-gray-800 flex items-center justify-center mb-4">
+                            <i class="fas fa-ghost fa-4x text-gray-600"></i>
+                        </div>
+                        <p class="text-gray-400 text-lg">No upcoming tournaments</p>
+                        <p class="text-gray-500 text-sm mt-2">Check back soon for new competitions!</p>
+                    </div>`;
+                return;
+            }
+            
+            listEl.innerHTML = Object.entries(tournaments).map(([id, t]) => `
+                <div class="tournament-card rounded-2xl shadow-2xl overflow-hidden card-hover">
+                    <div class="p-5 bg-gradient-to-r from-cyan-600/20 to-teal-600/20 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full -mr-16 -mt-16"></div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-2xl text-white mb-1">${t.title}</h3>
+                                    <p class="text-cyan-200 flex items-center">
+                                        <i class="fas fa-gamepad mr-2"></i>${t.game_name}
+                                    </p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-xs text-teal-300 mb-1">Prize Pool</div>
+                                    <span class="text-2xl font-bold text-yellow-400 glow">
+                                        ${formatCurrency(t.prize_pool)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-5">
+                        <div class="grid grid-cols-2 gap-3 mb-5">
+                            <div class="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 p-4 rounded-xl border border-yellow-500/30 shadow-lg">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs text-gray-400 mb-1">Entry Fee</p>
+                                        <p class="font-bold text-xl text-yellow-400">${formatCurrency(t.entry_fee)}</p>
+                                    </div>
+                                    <i class="fas fa-coins text-3xl text-yellow-500/30"></i>
+                                </div>
+                            </div>
+                            <div class="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 p-4 rounded-xl border border-blue-500/30 shadow-lg">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs text-gray-400 mb-1">Match Time</p>
+                                        <p class="font-bold text-sm text-cyan-400">${new Date(t.match_time).toLocaleDateString()}</p>
+                                        <p class="text-xs text-cyan-300">${new Date(t.match_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                    </div>
+                                    <i class="fas fa-clock text-3xl text-blue-500/30"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button onclick="openJoinModal('${id}', ${t.entry_fee}, '${t.title}')" class="w-full text-white bg-gradient-to-r from-green-500 via-teal-500 to-cyan-500 font-bold py-4 rounded-xl text-lg btn-animated shadow-xl">
+                            <i class="fas fa-bolt mr-2"></i>Join Tournament
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function openJoinModal(tournamentId, entryFee, title) {
+            document.getElementById('join-tournament-id').value = tournamentId;
+            document.getElementById('join-entry-fee').value = entryFee;
+            document.getElementById('join-fee-display').textContent = formatCurrency(entryFee);
+            document.getElementById('joinTournamentForm').reset();
+            document.getElementById('join-tournament-id').value = tournamentId;
+            document.getElementById('join-entry-fee').value = entryFee;
+            toggleModal('joinTournamentModal', true);
+        }
+
+        async function renderMyTournamentsPage(container) {
+            container.innerHTML = `
+                <div class="p-4 min-h-screen">
+                    <h2 class="text-3xl font-bold mb-6 text-gradient flex items-center">
+                        <i class="fas fa-trophy mr-3"></i>My Tournaments
+                    </h2>
+                    <div class="flex border-b border-teal-500/30 mb-6 bg-card rounded-t-xl">
+                        <button id="upcomingLiveTab" class="flex-1 py-4 text-center font-bold border-b-2 border-teal-500 text-teal-400 transition-all">
+                            <i class="fas fa-fire mr-1"></i>Active
+                        </button>
+                        <button id="completedTab" class="flex-1 py-4 text-center font-bold border-b-2 border-transparent text-gray-400 transition-all">
+                            <i class="fas fa-history mr-1"></i>Completed
+                        </button>
+                    </div>
+                    <div id="upcomingLiveContent" class="space-y-4"></div>
+                    <div id="completedContent" class="space-y-4" style="display:none;"></div>
+                </div>`;
+            
+            attachMyTournamentsListeners();
+            const allTournaments = (await db.ref('tournaments').once('value')).val() || {};
+            let upcomingHtml = '', completedHtml = '', hasUpcoming = false, hasCompleted = false;
+            
+            for (const tId in allTournaments) {
+                const participant = (await db.ref(`participants/${tId}/${auth.currentUser.uid}`).once('value')).val();
+                if (participant) {
+                    const t = allTournaments[tId];
+                    if (t.status !== 'Completed') {
+                        hasUpcoming = true;
+                        upcomingHtml += `
+                            <div class="bg-card border-l-4 ${t.status === 'Live' ? 'border-red-500' : 'border-blue-500'} p-5 shadow-xl rounded-r-2xl card-hover">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h3 class="font-bold text-xl text-white">${t.title}</h3>
+                                    <span class="text-xs font-bold ${t.status === 'Live' ? 'text-red-300 bg-red-900/50 border-red-500' : 'text-yellow-300 bg-yellow-900/50 border-yellow-500'} px-3 py-2 rounded-full border status-badge">
+                                        ${t.status === 'Live' ? '<i class="fas fa-circle mr-1 animate-pulse" style="font-size: 8px;"></i>' : '<i class="fas fa-clock mr-1"></i>'}${t.status}
+                                    </span>
+                                </div>
+                                <p class="text-gray-400 mb-2 flex items-center">
+                                    <i class="fas fa-gamepad mr-2 text-teal-400"></i>${t.game_name}
+                                </p>
+                                <div class="bg-teal-900/20 border border-teal-500/30 p-3 rounded-lg mb-3">
+                                    <p class="text-sm text-gray-400">Your Game Info</p>
+                                    <p class="text-white font-semibold"><i class="fas fa-user mr-2 text-teal-400"></i>${participant.game_name}</p>
+                                    <p class="text-white font-semibold"><i class="fas fa-id-card mr-2 text-cyan-400"></i>${participant.game_uid}</p>
+                                </div>
+                                ${t.status === 'Live' && t.room_id ? `
+                                    <div class="bg-gradient-to-r from-teal-900/30 to-cyan-900/30 p-4 rounded-lg border border-teal-500/30 mb-3 glow">
+                                        <p class="text-sm text-cyan-300 font-bold mb-2"><i class="fas fa-door-open mr-2"></i>Room Details</p>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-gray-400">Room ID:</span>
+                                                <span class="font-mono text-teal-300 font-bold text-lg">${t.room_id}</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-gray-400">Password:</span>
+                                                <span class="font-mono text-teal-300 font-bold text-lg">${t.room_password}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="w-full text-white bg-gradient-to-r from-green-500 to-teal-500 font-bold py-4 rounded-xl text-lg btn-animated shadow-xl">
+                                        <i class="fas fa-play-circle mr-2"></i>Join Game Now
+                                    </button>
+                                ` : `
+                                    <div class="bg-gradient-to-r from-blue-900/30 to-cyan-900/30 p-4 rounded-lg border border-blue-500/30 text-center">
+                                        <i class="fas fa-lock text-3xl text-blue-400 mb-2"></i>
+                                        <p class="text-sm text-gray-400">Room details will appear when match goes Live</p>
+                                    </div>
+                                `}
+                            </div>`;
+                    } else {
+                        hasCompleted = true;
+                        const isWinner = participant.status === 'Winner';
+                        completedHtml += `
+                            <div class="bg-card p-5 rounded-xl shadow-xl card-hover ${isWinner ? 'border-2 border-yellow-500' : ''}">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <h3 class="font-bold text-lg text-white mb-1">${t.title}</h3>
+                                        <p class="text-sm text-gray-400">
+                                            <i class="fas fa-calendar mr-2"></i>${new Date(t.match_time).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        ${isWinner ? `
+                                            <div class="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-2 rounded-full font-bold shadow-lg glow">
+                                                <i class="fas fa-crown mr-1"></i>Winner
+                                            </div>
+                                            <p class="text-green-400 font-bold mt-2">${formatCurrency(t.prize_pool)}</p>
+                                        ` : `
+                                            <span class="text-gray-400 font-semibold bg-gray-700/50 px-3 py-2 rounded-full">
+                                                ${participant.status || 'Completed'}
+                                            </span>
+                                        `}
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
+                }
+            }
+            
+            document.getElementById('upcomingLiveContent').innerHTML = hasUpcoming ? upcomingHtml : `
+                <div class="text-center py-16 bounce-in">
+                    <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-r from-gray-700 to-gray-800 flex items-center justify-center mb-4">
+                        <i class="fas fa-sad-tear fa-3x text-gray-600"></i>
+                    </div>
+                    <p class="text-gray-400 text-lg">No active tournaments</p>
+                    <p class="text-gray-500 text-sm mt-2">Join a tournament from the Home page</p>
+                    <button onclick="navigateTo('homePage')" class="mt-4 bg-gradient-to-r from-cyan-500 to-teal-500 text-white px-6 py-3 rounded-lg font-semibold btn-animated">
+                        <i class="fas fa-search mr-2"></i>Browse Tournaments
+                    </button>
+                </div>`;
+            
+            document.getElementById('completedContent').innerHTML = hasCompleted ? completedHtml : `
+                <div class="text-center py-16 bounce-in">
+                    <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-r from-gray-700 to-gray-800 flex items-center justify-center mb-4">
+                        <i class="fas fa-history fa-3x text-gray-600"></i>
+                    </div>
+                    <p class="text-gray-400 text-lg">No completed tournaments</p>
+                    <p class="text-gray-500 text-sm mt-2">Your tournament history will appear here</p>
+                </div>`;
+        }
+
+        function renderWalletPage(container) {
+            if (!currentUserData) return;
+            container.innerHTML = `
+                <div class="p-4 min-h-screen">
+                    <h2 class="text-3xl font-bold mb-6 text-gradient flex items-center">
+                        <i class="fas fa-wallet mr-3"></i>My Wallet
+                    </h2>
+                    
+                    <div class="bg-gradient-to-br from-cyan-600 via-teal-600 to-green-600 text-white p-8 rounded-3xl text-center shadow-2xl mb-6 glow relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
+                        <div class="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
+                        <div class="relative z-10">
+                            <p class="text-lg text-cyan-100 mb-3 flex items-center justify-center">
+                                <i class="fas fa-coins mr-2"></i>Current Balance
+                            </p>
+                            <p id="wallet-main-balance" class="text-6xl font-bold tracking-tight mb-2">${formatCurrency(currentUserData.wallet_balance || 0)}</p>
+                            <p class="text-cyan-200 text-sm">Available for tournaments</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <button onclick="toggleModal('depositMoneyModal', true)" class="bg-gradient-to-br from-green-500 to-teal-600 text-white font-bold p-6 rounded-2xl shadow-xl btn-animated">
+                            <i class="fas fa-plus-circle text-3xl mb-2"></i>
+                            <p class="text-lg">Deposit</p>
+                        </button>
+                        <button onclick="toggleModal('withdrawMoneyModal', true)" class="bg-gradient-to-br from-orange-500 to-red-600 text-white font-bold p-6 rounded-2xl shadow-xl btn-animated">
+                            <i class="fas fa-minus-circle text-3xl mb-2"></i>
+                            <p class="text-lg">Withdraw</p>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-card p-5 rounded-2xl shadow-xl">
+                        <h3 class="text-xl font-bold mb-4 flex items-center text-white">
+                            <i class="fas fa-history mr-2 text-teal-400"></i>Transaction History
+                        </h3>
+                        <div id="transaction-list" class="space-y-3 max-h-96 overflow-y-auto"></div>
+                    </div>
+                </div>`;
+            
+            const listEl = document.getElementById('transaction-list');
+            const transactionsRef = db.ref(`transactions/${currentUserData.uid}`).orderByChild('created_at').limitToLast(20);
+
+            transactionsRef.on('value', snap => {
+                const transactions = snap.val();
+                if (!transactions) {
+                    listEl.innerHTML = `
+                        <div class="text-center py-12">
+                            <i class="fas fa-receipt text-5xl text-gray-700 mb-3"></i>
+                            <p class="text-gray-400">No transactions yet</p>
+                        </div>`;
+                    return;
+                }
+                listEl.innerHTML = Object.values(transactions).sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).map(t => `
+                    <div class="p-4 rounded-xl flex justify-between items-center shadow-md transition-all hover:scale-102 ${t.type === 'credit' ? 'bg-gradient-to-r from-green-900/20 to-teal-900/20 border-l-4 border-green-400' : 'bg-gradient-to-r from-red-900/20 to-orange-900/20 border-l-4 border-red-400'}">
+                        <div class="flex items-center gap-3">
+                            <div class="${t.type === 'credit' ? 'bg-green-500' : 'bg-red-500'} w-10 h-10 rounded-full flex items-center justify-center">
+                                <i class="fas fa-${t.type === 'credit' ? 'arrow-down' : 'arrow-up'} text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-white">${t.description}</p>
+                                <p class="text-xs text-gray-400">
+                                    <i class="far fa-clock mr-1"></i>${new Date(t.created_at).toLocaleString()}
+                                </p>
+                            </div>
+                        </div>
+                        <p class="font-bold text-xl ${t.type === 'credit' ? 'text-green-400' : 'text-red-400'}">
+                            ${t.type === 'credit' ? '+' : '-'}${formatCurrency(t.amount)}
+                        </p>
+                    </div>`).join('');
+            });
+        }
+
+        function renderProfilePage(container) {
+            if (!currentUserData) return;
+            const isAdmin = currentUserData.role === 'admin';
+            container.innerHTML = `
+                <div class="p-4 space-y-6 min-h-screen">
+                    <h2 class="text-3xl font-bold mb-6 text-gradient flex items-center">
+                        <i class="fas fa-user-circle mr-3"></i>My Profile
+                    </h2>
+                    
+                    <div class="bg-card p-6 rounded-2xl shadow-xl">
+                        <div class="text-center mb-6">
+                            <div class="w-28 h-28 mx-auto rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 flex items-center justify-center text-5xl text-white glow shadow-2xl">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            ${isAdmin ? '<div class="mt-3"><span class="inline-block bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-5 py-2 rounded-full text-sm font-bold shadow-lg glow"><i class="fas fa-crown mr-1"></i>Administrator</span></div>' : ''}
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-gradient-to-r from-teal-900/20 to-cyan-900/20 border border-teal-500/30 p-5 rounded-xl">
+                                <p class="text-gray-400 text-sm mb-1 flex items-center">
+                                    <i class="fas fa-user mr-2 text-teal-400"></i>Username
+                                </p>
+                                <p class="text-2xl font-bold text-teal-300">${currentUserData.username || 'N/A'}</p>
+                            </div>
+                            <div class="bg-gradient-to-r from-teal-900/20 to-cyan-900/20 border border-teal-500/30 p-5 rounded-xl">
+                                <p class="text-gray-400 text-sm mb-1 flex items-center">
+                                    <i class="fas fa-envelope mr-2 text-cyan-400"></i>Email
+                                </p>
+                                <p class="text-lg text-teal-300">${currentUserData.email || 'N/A'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${isAdmin ? `
+                    <a href="admin.html" class="block w-full text-center text-white bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 p-5 rounded-2xl font-bold text-lg shadow-xl btn-animated">
+                        <i class="fas fa-shield-alt mr-2"></i>Open Admin Panel
+                    </a>` : ''}
+                    
+                    <div class="bg-card p-5 rounded-2xl shadow-xl">
+                        <h3 class="text-xl font-bold mb-4 flex items-center text-white">
+                            <i class="fas fa-cog mr-2 text-teal-400"></i>Account Settings
+                        </h3>
+                        <button onclick="changePassword()" class="w-full text-white bg-gradient-to-r from-cyan-500 to-teal-500 p-4 rounded-xl font-bold btn-animated">
+                            <i class="fas fa-key mr-2"></i>Send Password Reset Email
+                        </button>
+                    </div>
+                    
+                    <button onclick="logout()" class="w-full text-white bg-gradient-to-r from-red-500 to-orange-500 p-5 rounded-xl font-bold text-lg btn-animated shadow-xl">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>`;
+        }
+
+        function attachLoginListeners() {
+            const loginTab = document.getElementById('loginTabBtn'), signupTab = document.getElementById('signupTabBtn'), loginForm = document.getElementById('loginForm'), signupForm = document.getElementById('signupForm');
+            loginTab.addEventListener('click', () => { 
+                loginTab.className = "flex-1 py-3 text-center font-bold border-b-2 border-teal-500 text-teal-400 transition-all"; 
+                signupTab.className = "flex-1 py-3 text-center font-bold text-gray-400 border-b-2 border-transparent transition-all"; 
+                loginForm.style.display = 'block'; 
+                signupForm.style.display = 'none'; 
+            });
+            signupTab.addEventListener('click', () => { 
+                signupTab.className = "flex-1 py-3 text-center font-bold border-b-2 border-teal-500 text-teal-400 transition-all"; 
+                loginTab.className = "flex-1 py-3 text-center font-bold text-gray-400 border-b-2 border-transparent transition-all"; 
+                signupForm.style.display = 'block'; 
+                loginForm.style.display = 'none'; 
+            });
+            loginForm.addEventListener('submit', e => { 
+                e.preventDefault(); 
+                const btn = e.target.querySelector('button[type="submit"]');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Logging in...';
+                btn.disabled = true;
+                auth.signInWithEmailAndPassword(e.target.loginEmail.value, e.target.loginPassword.value)
+                    .catch(err => {
+                        showToast(err.message, true);
+                        btn.innerHTML = '<i class="fas fa-arrow-right mr-2"></i>Login';
+                        btn.disabled = false;
+                    }); 
+            });
+            signupForm.addEventListener('submit', e => { 
+                e.preventDefault(); 
+                const btn = e.target.querySelector('button[type="submit"]');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating account...';
+                btn.disabled = true;
+                const { signupUsername, signupEmail, signupPassword } = e.target; 
+                auth.createUserWithEmailAndPassword(signupEmail.value, signupPassword.value).then(cred => 
+                    db.ref('users/' + cred.user.uid).set({ 
+                        username: signupUsername.value, 
+                        email: signupEmail.value, 
+                        wallet_balance: 0,
+                        role: 'user',
+                        created_at: new Date().toISOString() 
+                    })
+                ).catch(err => {
+                    showToast(err.message, true);
+                    btn.innerHTML = '<i class="fas fa-user-plus mr-2"></i>Create Account';
+                    btn.disabled = false;
+                }); 
+            });
+        }
+
+        function attachMyTournamentsListeners() {
+            const upcomingTab = document.getElementById('upcomingLiveTab'), completedTab = document.getElementById('completedTab'), upcomingContent = document.getElementById('upcomingLiveContent'), completedContent = document.getElementById('completedContent');
+            upcomingTab.addEventListener('click', () => { 
+                upcomingTab.className="flex-1 py-4 text-center font-bold border-b-2 border-teal-500 text-teal-400 transition-all"; 
+                completedTab.className="flex-1 py-4 text-center font-bold text-gray-400 border-b-2 border-transparent transition-all"; 
+                upcomingContent.style.display = 'block'; 
+                completedContent.style.display = 'none'; 
+            });
+            completedTab.addEventListener('click', () => { 
+                completedTab.className="flex-1 py-4 text-center font-bold border-b-2 border-teal-500 text-teal-400 transition-all"; 
+                upcomingTab.className="flex-1 py-4 text-center font-bold text-gray-400 border-b-2 border-transparent transition-all"; 
+                completedContent.style.display = 'block'; 
+                upcomingContent.style.display = 'none'; 
+            });
+        }
+
+        async function joinTournament(event) {
+            event.preventDefault();
+            const tournamentId = document.getElementById('join-tournament-id').value;
+            const entryFee = Number(document.getElementById('join-entry-fee').value);
+            const gameName = document.getElementById('join-game-name').value.trim();
+            const gameUid = document.getElementById('join-game-uid').value.trim();
+            
+            const user = auth.currentUser;
+            if (!user) return showToast('You must be logged in!', true);
+            if (currentUserData.wallet_balance < entryFee) return showToast('Insufficient balance! Please deposit money first.', true);
+            if ((await db.ref(`participants/${tournamentId}/${user.uid}`).once('value')).exists()) return showToast("You've already joined this tournament!", true);
+            
+            const btn = event.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Joining...';
+            btn.disabled = true;
+            
+            try {
+                const updates = {
+                    [`/users/${user.uid}/wallet_balance`]: currentUserData.wallet_balance - entryFee,
+                    [`/participants/${tournamentId}/${user.uid}`]: { 
+                        status: 'Participated',
+                        game_name: gameName,
+                        game_uid: gameUid,
+                        joined_at: new Date().toISOString()
+                    },
+                    [`/transactions/${user.uid}/${db.ref().child('transactions').push().key}`]: { 
+                        amount: entryFee, 
+                        type: 'debit', 
+                        description: `Tournament Entry Fee`, 
+                        created_at: new Date().toISOString() 
+                    }
+                };
+                
+                await db.ref().update(updates);
+                showToast('Successfully joined tournament! 🎉');
+                toggleModal('joinTournamentModal', false);
+                navigateTo('myTournamentsPage');
+            } catch (error) {
+                showToast('Failed to join tournament. Please try again.', true);
+                btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Confirm & Join';
+                btn.disabled = false;
+            }
+        }
+
+        function confirmPayment() {
+            const amount = document.getElementById('deposit-amount').value;
+            const method = document.getElementById('deposit-method').value;
+            const phone = document.getElementById('deposit-phone').value;
+            const trxId = document.getElementById('deposit-trxid').value;
+            
+            if (!amount || !method || !phone || !trxId) {
+                showToast('Please fill in all fields first!', true);
+                return;
+            }
+            
+            if (Number(amount) < 10) {
+                showToast('Minimum deposit amount is ৳10', true);
+                return;
+            }
+            
+            paymentConfirmed = true;
+            const confirmBtn = document.getElementById('confirmPaymentBtn');
+            const submitBtn = document.getElementById('submitDepositBtn');
+            
+            confirmBtn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Payment Confirmed';
+            confirmBtn.classList.remove('from-yellow-500', 'to-orange-500');
+            confirmBtn.classList.add('from-green-500', 'to-teal-500');
+            confirmBtn.disabled = true;
+            
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+            submitBtn.classList.add('payment-confirmed');
+            
+            showToast('Payment confirmed! Now click Submit Request.');
+        }
+
+        function resetDepositForm() {
+            paymentConfirmed = false;
+            const confirmBtn = document.getElementById('confirmPaymentBtn');
+            const submitBtn = document.getElementById('submitDepositBtn');
+            
+            confirmBtn.innerHTML = '<i class="fas fa-check-double mr-2"></i>Confirm Payment';
+            confirmBtn.classList.remove('from-green-500', 'to-teal-500');
+            confirmBtn.classList.add('from-yellow-500', 'to-orange-500');
+            confirmBtn.disabled = false;
+            
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            submitBtn.style.cursor = 'not-allowed';
+            submitBtn.classList.remove('payment-confirmed');
+            
+            document.getElementById('depositMoneyForm').reset();
+        }
+
+        async function depositMoney(event) {
+            event.preventDefault();
+            
+            if (!paymentConfirmed) {
+                showToast('Please confirm your payment first!', true);
+                const confirmBtn = document.getElementById('confirmPaymentBtn');
+                confirmBtn.classList.add('shake');
+                setTimeout(() => confirmBtn.classList.remove('shake'), 500);
+                return;
+            }
+            
+            const amount = Number(document.getElementById('deposit-amount').value);
+            const method = document.getElementById('deposit-method').value;
+            const phone = document.getElementById('deposit-phone').value;
+            const trxId = document.getElementById('deposit-trxid').value;
+            
+            if (amount < 10) return showToast('Minimum deposit amount is ৳10', true);
+            
+            const btn = event.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
+            btn.disabled = true;
+            
+            try {
+                const requestData = {
+                    user_id: auth.currentUser.uid,
+                    username: currentUserData.username,
+                    amount: amount,
+                    payment_method: method,
+                    phone_number: phone,
+                    transaction_id: trxId,
+                    status: 'pending',
+                    type: 'deposit',
+                    created_at: new Date().toISOString()
+                };
+                
+                await db.ref('payment_requests').push(requestData);
+                showToast('Deposit request submitted! Admin will approve within 5-10 minutes. 💰');
+                toggleModal('depositMoneyModal', false);
+                resetDepositForm();
+            } catch (error) {
+                showToast('Failed to submit request. Please try again.', true);
+                btn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Submit Request';
+                btn.disabled = false;
+            }
+        }
+
+        async function withdrawMoney(event) {
+            event.preventDefault();
+            const amount = Number(document.getElementById('withdraw-amount').value);
+            const method = document.getElementById('withdraw-method').value;
+            const phone = document.getElementById('withdraw-phone').value;
+            
+            if (amount < 100) return showToast('Minimum withdrawal amount is ৳100', true);
+            if (amount > currentUserData.wallet_balance) return showToast('Insufficient balance!', true);
+            
+            const btn = event.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+            btn.disabled = true;
+            
+            try {
+                const requestData = {
+                    user_id: auth.currentUser.uid,
+                    username: currentUserData.username,
+                    amount: amount,
+                    payment_method: method,
+                    phone_number: phone,
+                    status: 'pending',
+                    type: 'withdraw',
+                    created_at: new Date().toISOString()
+                };
+                
+                await db.ref('payment_requests').push(requestData);
+                showToast('Withdrawal request submitted! Processing time: 1-24 hours. 💸');
+                toggleModal('withdrawMoneyModal', false);
+                event.target.reset();
+            } catch (error) {
+                showToast('Failed to submit request. Please try again.', true);
+            } finally {
+                btn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Request Withdrawal';
+                btn.disabled = false;
+            }
+        }
+
+        function logout() { 
+            if (confirm('Are you sure you want to logout?')) {
+                auth.signOut();
+                showToast('Logged out successfully');
+            }
+        }
+        
+        function changePassword() { 
+            auth.sendPasswordResetEmail(auth.currentUser.email)
+                .then(() => showToast(`Password reset link sent to ${auth.currentUser.email} 📧`))
+                .catch(err => showToast(err.message, true)); 
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('joinTournamentForm')?.addEventListener('submit', joinTournament);
+            document.getElementById('depositMoneyForm')?.addEventListener('submit', depositMoney);
+            document.getElementById('withdrawMoneyForm')?.addEventListener('submit', withdrawMoney);
+            document.getElementById('confirmPaymentBtn')?.addEventListener('click', confirmPayment);
+        });
+
+        // Prevent pull-to-refresh on mobile
+        document.body.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
+    </script>
 </body>
-</html>
+  </html>
